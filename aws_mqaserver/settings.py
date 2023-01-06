@@ -113,16 +113,16 @@ WSGI_APPLICATION = 'aws_mqaserver.wsgi.application'
 #        'PASSWORD': '12345678', # 数据库密码
 #    }
 #}
- DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-         'NAME': 'smartaudit_prod',
-         'USER': 'smartaudit',
-         'PASSWORD': '6AlDS:5~RC,Q0A-G@i5s9(Q+!ijzAK',
-         'HOST': 'isdsepgdb-mqa-smartaudit-prod.g.apple.com',
-         'PORT': '5301'
-     }
- }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'smartaudit_prod',
+        'USER': 'smartaudit',
+        'PASSWORD': '6AlDS:5~RC,Q0A-G@i5s9(Q+!ijzAK',
+        'HOST': 'isdsepgdb-mqa-smartaudit-prod.g.apple.com',
+        'PORT': '5301'
+    }
+}
 
 
 # Password validation
