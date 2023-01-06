@@ -2,6 +2,11 @@ from django.db import models
 # import os
 # import uuid
 
+class AuditType():
+    Module = 1
+    Enclosure = 2
+    ModuleEnclosure = 3
+
 class CheckType():
     Module = 1
     Enclosure = 2
@@ -9,8 +14,12 @@ class CheckType():
     # KAPPA = 4
     # OBA = 5
 
+    Glue = 10
+    Destructive = 11
+
 class User(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     icon = models.CharField(null=True, max_length=255)
     account = models.CharField(unique=True, max_length=50)
     password = models.CharField(max_length=32)
@@ -23,17 +32,24 @@ class User(models.Model):
     
 class Line(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=True, max_length=50)
     productLine = models.CharField('productLine', null=True, max_length=50)
     project = models.CharField('project', null=True, max_length=50)
     part = models.CharField('part', null=True, max_length=50)    
     auditType = models.SmallIntegerField('auditType', null=False)
+    checkListId1 = models.BigIntegerField('checkListId1', null=True)
+    checkListId2 = models.BigIntegerField('checkListId2', null=True)
+    checkListId3 = models.BigIntegerField('checkListId3', null=True)
+    checkListId10 = models.BigIntegerField('checkListId10', null=True)
+    checkListId11 = models.BigIntegerField('checkListId11', null=True)
     class Meta:
         db_table = 't_sa_line'
         
 class CheckList(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
@@ -50,6 +66,7 @@ class CheckList(models.Model):
         
 class CheckListItemModule(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     checkListId = models.BigIntegerField(null=False)
     sn = models.IntegerField('sn', null=False)
     mainProcess = models.CharField('mainProcess', null=False, max_length=255)
@@ -76,6 +93,7 @@ class CheckListItemModule(models.Model):
         
 class CheckListItemEnclosure(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     checkListId = models.BigIntegerField(null=False)
     sn = models.IntegerField('sn', null=False)
     area = models.CharField('area', null=False, max_length=255)
@@ -91,6 +109,7 @@ class CheckListItemEnclosure(models.Model):
         
 class CheckListItemORT(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     checkListId = models.BigIntegerField(null=False)
     sn = models.IntegerField('sn', null=False)
     project = models.CharField('project', null=False, max_length=255)
@@ -110,10 +129,42 @@ class CheckListItemORT(models.Model):
     class Meta:
         db_table = 't_sa_check_list_item_ort'
 
+class CheckListItemGlue(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
+    checkListId = models.BigIntegerField(null=False)
+    sn = models.IntegerField('sn', null=False)
+    theClass = models.CharField('theClass', null=False, max_length=99)
+    lineShift = models.CharField('lineShift', null=False, max_length=99)
+    site = models.CharField('site', null=False, max_length=99)
+    projects = models.CharField('projects', null=False, max_length=99)
+    item = models.CharField('item', null=False, max_length=255)
+    glue = models.CharField('glue', null=False, max_length=255)
+    unit = models.CharField('unit', null=False, max_length=255)
+    LSL = models.CharField('LSL', null=False, max_length=99)
+    USL = models.CharField('USL', null=False, max_length=99)
+    class Meta:
+        db_table = 't_sa_check_list_item_glue'
+class CheckListItemDestructive(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
+    checkListId = models.BigIntegerField(null=False)
+    sn = models.IntegerField('sn', null=False)
+    theClass = models.CharField('theClass', null=False, max_length=99)
+    lineShift = models.CharField('lineShift', null=False, max_length=99)
+    site = models.CharField('site', null=False, max_length=99)
+    projects = models.CharField('projects', null=False, max_length=99)
+    item = models.CharField('item', null=False, max_length=255)
+    unit = models.CharField('unit', null=False, max_length=255)
+    LSL = models.CharField('LSL', null=False, max_length=99)
+    class Meta:
+        db_table = 't_sa_check_list_item_destructive'
+
 # One AuditRoughItem is for one Audit,
 # This is a rough model with all audit items and findings packed in json
 class AuditItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
@@ -137,6 +188,7 @@ class AuditItem(models.Model):
 
 class KAPPAItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
@@ -160,6 +212,7 @@ class KAPPAItem(models.Model):
 
 class OBAItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
@@ -182,6 +235,7 @@ class OBAItem(models.Model):
 
 class MILItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
     auditItemId = models.BigIntegerField('auditItemId', null=True)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)

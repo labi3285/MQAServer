@@ -23,10 +23,9 @@ logger = logging.getLogger('django')
 
 @transaction.atomic
 def upload_audit_item(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorName = tokenInfo.get('name')
-    operatorId = tokenInfo.get('id')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
@@ -37,9 +36,9 @@ def upload_audit_item(request):
     endTime = validator.validate_date(params, 'endTime')
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
-    auditor = value.safe_get_key(params, 'auditor')
+    auditor = value.safe_get_in_key(params, 'auditor')
     if auditor == None:
-        auditor = operatorName
+        auditor = operator.name
     passCount = 0
     failCount = 0
     doneCount = 0
@@ -51,10 +50,10 @@ def upload_audit_item(request):
         findingsArr = []
         for e in arr:
             totalCount += 1
-            isDone = value.safe_get_key(e, 'isDone', False)
+            isDone = value.safe_get_in_key(e, 'isDone', False)
             if isDone:
                 doneCount += 1
-            findings = value.safe_get_key(e, 'findings')
+            findings = value.safe_get_in_key(e, 'findings')
             if findings != None and len(findings) > 0:
                 failCount += 1
                 for f in findings:
@@ -63,12 +62,12 @@ def upload_audit_item(request):
             else:
                 if isDone:
                     passCount += 1
-    entry = AuditItem(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
+    entry = AuditItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
                         beginTime=beginTime, endTime=endTime, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
-                          auditorId=operatorId, auditor=auditor)
+                          auditorId=operator.id, auditor=auditor)
     entry.save()
     if findingsArr != None and len(findingsArr) > 0:
-        mil_item._batch_add_mil_items(entry.id, lob, site, productLine, project, part, type, operatorId,
+        mil_item._batch_add_mil_items(entry.id, team, lob, site, productLine, project, part, type, operator.id,
                                       auditor, findingsArr)
         return response.ResponseData({
             'id': entry.id

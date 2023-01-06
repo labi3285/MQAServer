@@ -27,16 +27,17 @@ def login(request):
         if passoword != settings.ADMIN_PASSWORD:
             return response.ResponseError('Password Incorrect')
         id = -1
-        account = 'admin'
-        lob = 'mqa'
-        role = 'admin'
-        _token = token.generate_token(id, account, lob, role)
+        lob = ''
+        team = 'mqa'
+        role = 'super_admin'
+        _token = token.generate_token(id, team, account, lob, role)
         return response.ResponseData({
             'user': {
                 'id': id,
+                'team': team,
                 'account': 'admin',
                 'lob': lob,
-                'role': role          
+                'role': role
             },
             'token': _token
         })
@@ -48,11 +49,9 @@ def login(request):
             return response.ResponseError('User Disabled')
         if user.password != passoword:
             return response.ResponseError('Password Incorrect')
-        _token = token.generate_token(user.id, user.account, user.lob, user.role)
+        _token = token.generate_token(user.id, user.team, user.account, user.lob, user.role)
         dict = model_to_dict(user)
         dict['password'] = None
-        logger.info('user login:')
-        logger.info(user)
         return response.ResponseData({
             'user': dict,
             'token': _token
@@ -65,27 +64,23 @@ def login(request):
 
 # Add Users
 def add_user(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    
+    team = validator.get_team(params, operator)
     account = validator.validate_not_empty(params, 'account')
     role = validator.validate_not_empty(params, 'role')
-    
     lob = None
-    if role != 'admin':
+    if role != 'super_admin' and role != 'admin':
         lob = validator.validate_not_empty(params, 'lob')
-    
-    if operatorRole != 'admin':
-        # Only admin can add admin or lob_manager
-        if role == 'admin' or role == 'lob_manager':
+    if operator.role != 'super_admin' and operator.role != 'admin':
+        # Only admin can add admin or lob_dri
+        if role == 'super_admin' or role == 'admin' or role == 'lob_dri':
             return response.ResponseError('Operation Forbidden')
-        # Only admin or lob_manager can add user
-        if operatorRole != 'lob_manager':
+        # Only admin or lob_dri can add user
+        if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden')
         # Lob Manager can only add user in the same lob
-        if operatorLob != lob:
+        if operator.lob != lob:
             return response.ResponseError('Operation Forbidden')
     # can not use name as 'admin'
     if account == 'admin':
@@ -101,7 +96,7 @@ def add_user(request):
         return response.ResponseError('System Error')
     # add user
     try:
-        user = User(account=account, role=role, lob=lob, password=settings.USER_DEFAULT_PASSWORD, createTime=datetime.datetime.now())
+        user = User(account=account, team=team, role=role, lob=lob, password=settings.USER_DEFAULT_PASSWORD, createTime=datetime.datetime.now())
         user.save()
         return response.ResponseData('Add Success')
     except Exception:
@@ -111,9 +106,7 @@ def add_user(request):
 
 # Change User Role
 def change_user_role(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')
     role = validator.validate_not_empty(params, 'role')
@@ -122,15 +115,15 @@ def change_user_role(request):
     if role != 'admin':
         lob = validator.validate_not_empty(params, 'lob')
 
-    if operatorRole != 'admin':
-        # Only admin can add admin or lob_manager
-        if role == 'admin' or role == 'lob_manager':
+    if operator.role != 'super_admin' and operator.role != 'admin':
+        # Only admin can add admin or lob_dri
+        if role == 'super_admin' or role == 'admin' or role == 'lob_dri':
             return response.ResponseError('Operation Forbidden')
-        # Only admin or lob_manager can add user
-        if operatorRole != 'lob_manager':
+        # Only admin or lob_dri can add user
+        if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden')
         # Lob Manager can only add user in the same lob
-        if operatorLob != lob:
+        if operator.lob != lob:
             return response.ResponseError('Operation Forbidden')
     
     try:
@@ -145,19 +138,17 @@ def change_user_role(request):
     
 # Get Users Page
 def get_users_page(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorRole = tokenInfo.get('role')
-    operatorLob = tokenInfo.get('lob')
-    if operatorRole != 'admin' and operatorRole != 'lob_manager':
+    operator = validator.checkout_token_user(request)
+    if operator.role != 'super_admin' and operator.role != 'admin' and operator.role != 'lob_dri':
         return response.ResponseError('Operation Forbidden')
     params = json.loads(request.body.decode())
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
-    account = value.safe_get_key(params, 'account')
-    role = value.safe_get_key(params, 'role')
-    lob = value.safe_get_key(params, 'lob')
-    if operatorRole == 'lob_manager':
-        lob = operatorLob
+    account = value.safe_get_in_key(params, 'account')
+    role = value.safe_get_in_key(params, 'role')
+    lob = value.safe_get_in_key(params, 'lob')
+    if operator.role == 'lob_dri':
+        lob = operator.lob
     try:
         list = User.objects.all().order_by("createTime")
         if account != None:
@@ -189,23 +180,21 @@ def get_users_page(request):
     
 # Update User Status
 def update_user_status(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorId = tokenInfo.get('id')
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
+    operator.id = token_info.get('id')
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')    
     status = validator.validate_integer(params, 'status', min=0, max=1)    
-    if operatorRole != 'admin' and operatorRole != 'lob_manager':
+    if operator.role != 'super_admin' and operator.role != 'admin' and operator.role != 'lob_dri':
         return response.ResponseError('Operation Forbidden')
-    if operatorRole == 'lob_manager':
+    if operator.role == 'lob_dri':
         try:
             user = User.objects.get(id=id)
             # LOB Manager can not edit admin or LOB Manager
-            if user.role == 'admin' or user.role == 'lob_manager':
+            if user.role == 'admin' or user.role == 'lob_dri':
                 return response.ResponseError('Operation Forbidden')
             # LOB Manager can not edit users in other lobs
-            if user.lob != operatorLob:
+            if user.lob != operator.lob:
                 return response.ResponseError('Operation Forbidden')
         except User.DoesNotExist:
             return response.ResponseError('User Not Exist')
@@ -214,7 +203,7 @@ def update_user_status(request):
             return response.ResponseError('System Error')
     try:
         user = User.objects.get(id=id)
-        if user.id == operatorId:
+        if user.id == operator.id:
             return response.ResponseError('Cannot Delete Self')
         user.status = status
         user.save()
@@ -227,22 +216,19 @@ def update_user_status(request):
     
 # Reset User Password
 def reset_user_password(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorId = tokenInfo.get('id')
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')    
-    if operatorRole != 'admin' and operatorRole != 'lob_manager':
+    if operator.role != 'super_admin' and operator.role != 'admin' and operator.role != 'lob_dri':
         return response.ResponseError('Operation Forbidden')
-    if operatorRole == 'lob_manager':
+    if operator.role == 'lob_dri':
         try:
             user = User.objects.get(id=id)
             # LOB Manager can not edit admin or LOB Manager
-            if user.role == 'admin' or user.role == 'lob_manager':
+            if user.role == 'admin' or user.role == 'lob_dri':
                 return response.ResponseError('Operation Forbidden')
             # LOB Manager can not edit users in other lobs
-            if user.lob != operatorLob:
+            if user.lob != operator.lob:
                 return response.ResponseError('Operation Forbidden')
         except User.DoesNotExist:
             return response.ResponseError('User Not Exist')
@@ -251,7 +237,7 @@ def reset_user_password(request):
             return response.ResponseError('System Error')
     try:
         user = User.objects.get(id=id)
-        if user.id == operatorId:
+        if user.id == operator.id:
             return response.ResponseError('Cannot Delete Self')
         user.password = settings.USER_DEFAULT_PASSWORD
         user.save()
@@ -264,16 +250,12 @@ def reset_user_password(request):
     
 # Change User Password
 def user_change_password(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorId = tokenInfo.get('id')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     oldPassword = validator.validate_not_empty(params, 'oldPassword')
     newPassword = validator.validate_not_empty(params, 'newPassword')
     try:
-        logger.info('------------------------')
-        logger.info(operatorId)
-        
-        user = User.objects.get(id=operatorId)
+        user = User.objects.get(id=operator.id)
         if user.password != oldPassword:
             return response.ResponseError('Password Incorrect')
         user.password = newPassword
@@ -288,22 +270,19 @@ def user_change_password(request):
 # Delete user
 def delete_user(request):
     return response.ResponseError('Not Open')
-    tokenInfo = validator.check_token_info(request)
-    operatorId = tokenInfo.get('id')
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')    
-    if operatorRole != 'admin' and operatorRole != 'lob_manager':
+    if operator.role != 'super_admin' and operator.role != 'admin' and operator.role != 'lob_dri':
         return response.ResponseError('Operation Forbidden')
-    if operatorRole == 'lob_manager':
+    if operator.role == 'lob_dri':
         try:
             user = User.objects.get(id=id)
             # LOB Manager can not delete admin or LOB Manager
-            if user.role == 'admin' or user.role == 'lob_manager':
+            if user.role == 'admin' or user.role == 'lob_dri':
                 return response.ResponseError('Operation Forbidden')
             # LOB Manager can not delete users in other lobs
-            if user.lob != operatorLob:
+            if user.lob != operator.lob:
                 return response.ResponseError('Operation Forbidden')
         except User.DoesNotExist:
             return response.ResponseError('User Not Exist')
@@ -312,7 +291,7 @@ def delete_user(request):
             return response.ResponseError('System Error')
     try:
         user = User.objects.get(id=id)
-        if user.id == operatorId:
+        if user.id == operator.id:
             return response.ResponseError('Cannot Delete Self')
         user.delete()
         return response.ResponseData('Deleted')

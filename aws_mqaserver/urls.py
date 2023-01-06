@@ -58,7 +58,9 @@ urlpatterns = [
 
     path('upload_audit_item', aws_mqaserver.apis.audit_item.upload_audit_item),
     path('upload_kappa_item', aws_mqaserver.apis.kappa_item.upload_kappa_item),
+    path('get_kappa_items_for_year', aws_mqaserver.apis.kappa_item.get_kappa_items_for_year),
     path('upload_oba_item', aws_mqaserver.apis.oba_item.upload_oba_item),
+    path('get_oba_items_for_year', aws_mqaserver.apis.oba_item.get_oba_items_for_year),
 
     path('admin/', admin.site.urls),
     path('downloadCheckList/', downloadCheckList),

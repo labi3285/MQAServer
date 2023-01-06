@@ -13,6 +13,7 @@ from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
 
+from aws_mqaserver.models import AuditType
 from aws_mqaserver.models import Line
 
 import json
@@ -21,37 +22,34 @@ logger = logging.getLogger('django')
 
 # Add Line
 def add_line(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     auditType = validator.validate_integer(params, 'auditType')
     lob = validator.validate_not_empty(params, 'lob')
-    site = value.safe_get_key(params, 'site')
-    productLine = value.safe_get_key(params, 'productLine')
-    project = value.safe_get_key(params, 'project')
-    part = value.safe_get_key(params, 'part')
+    site = value.safe_get_in_key(params, 'site')
+    productLine = value.safe_get_in_key(params, 'productLine')
+    project = value.safe_get_in_key(params, 'project')
+    part = value.safe_get_in_key(params, 'part')
     if part != None and project == None:
         return response.ResponseError('Params Error')
     if project != None and productLine == None:
         return response.ResponseError('Params Error')
     if productLine != None and site == None:
-        return response.ResponseError('Params Error')  
-     
-    if operatorRole != 'admin':
+        return response.ResponseError('Params Error')
+    if operator.role != 'super_admin' and operator.role != 'admin':
         # only admin can add top level
         if site == None:
             return response.ResponseError('Operation Forbidden')
-        # only lob_manager and admin can add line
-        if operatorRole != 'lob_manager':
+        # only lob_dri and admin can add line
+        if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden') 
-        # lob_manager can only add lob sub line
-        if lob != operatorLob:
-            return response.ResponseError('Operation Forbidden') 
-        
+        # lob_dri can only add lob sub line
+        if lob != operator.lob:
+            return response.ResponseError('Operation Forbidden')
     # check duplicate name
     try:
-        Line.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
+        Line.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
         return response.ResponseError('Name Duplicate')
     except Line.DoesNotExist:
         pass
@@ -60,7 +58,7 @@ def add_line(request):
         return response.ResponseError('System Error')
     # add line
     try:
-        line = Line(lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
+        line = Line(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
         line.save()
         return response.ResponseData('Add Success')
     except Exception:
@@ -69,9 +67,7 @@ def add_line(request):
 
 # Delete Line
 def delete_line(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')
     line = None
@@ -82,15 +78,15 @@ def delete_line(request):
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
-    if operatorRole != 'admin':
-        # only admin can add top level
+    if operator.role != 'super_admin' and operator.role != 'admin':
+        # only admin can delete top level
         if line.site == None:
             return response.ResponseError('Operation Forbidden')
-        # only lob_manager and admin can delete line
-        if operatorRole != 'lob_manager':
+        # only lob_dri and admin can delete line
+        if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden') 
-        # lob_manager can only delete lob sub line
-        if line.lob != operatorLob:
+        # lob_dri can only delete lob sub line
+        if line.lob != operator.lob:
             return response.ResponseError('Operation Forbidden') 
     # delete line
     try:
@@ -115,17 +111,15 @@ def delete_line(request):
 
 # Get Lines Page
 def get_lines_page(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorRole = tokenInfo.get('role')
-    if operatorRole != 'admin' and operatorRole != 'lob_manager':
-        return response.ResponseError('Operation Forbidden')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
-    lob = value.safe_get_key(params, 'lob')
-    site = value.safe_get_key(params, 'site')
-    productLine = value.safe_get_key(params, 'productLine')
-    project = value.safe_get_key(params, 'project')
+    lob = value.safe_get_in_key(params, 'lob')
+    site = value.safe_get_in_key(params, 'site')
+    productLine = value.safe_get_in_key(params, 'productLine')
+    project = value.safe_get_in_key(params, 'project')
     if project != None:
         if productLine == None:
             return response.ResponseError('Params Error')
@@ -136,7 +130,7 @@ def get_lines_page(request):
         if lob == None:
             return response.ResponseError('Params Error') 
     try:
-        list = Line.objects.all()
+        list = Line.objects.all().filter(team=team)
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:
@@ -166,12 +160,13 @@ def get_lines_page(request):
     
 # Get Level Lines
 def get_level_lines(request):
-    tokenInfo = validator.check_token_info(request)
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    lob = value.safe_get_key(params, 'lob')
-    site = value.safe_get_key(params, 'site')
-    productLine = value.safe_get_key(params, 'productLine')
-    project = value.safe_get_key(params, 'project')
+    team = validator.get_team(params, operator)
+    lob = value.safe_get_in_key(params, 'lob')
+    site = value.safe_get_in_key(params, 'site')
+    productLine = value.safe_get_in_key(params, 'productLine')
+    project = value.safe_get_in_key(params, 'project')
     if project != None:
         if productLine == None or site == None or lob == None:
             return response.ResponseError('Params Error')
@@ -180,13 +175,15 @@ def get_level_lines(request):
             return response.ResponseError('Params Error')
     if site != None:
         if lob == None:
-            return response.ResponseError('Params Error')    
+            return response.ResponseError('Params Error')
+
+    logger.info(team)
     try:
         list = None
         if lob == None:
-            list = Line.objects.filter(lob__isnull=False, site__isnull=True)
+            list = Line.objects.filter(team=team, lob__isnull=False, site__isnull=True)
         else:
-            list = Line.objects.filter(lob=lob)
+            list = Line.objects.filter(team=team, lob=lob)
             if site == None:
                 list = list.filter(site__isnull=False, productLine__isnull=True)
             else:
@@ -212,20 +209,25 @@ def get_level_lines(request):
 
 # Get Lines Tree
 def get_lines_tree(request):
-    # tokenInfo = validator.check_token_info(request)
+    operator = validator.checkout_token_user(request)
+    params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     try:
-        list = Line.objects.all()
+        list = Line.objects.all().filter(team=team)
         arr = []
         for e in list:
             arr.append(model_to_dict(e))
+
+        info_cache = {}
         lobs_dic = {}
         # filte lob
         for a in arr:
             lob = a.get('lob')
-            sub = value.safe_get_key(lobs_dic, lob)
+            sub = value.safe_get_in_key(lobs_dic, lob)
             if sub == None:
                 sub = [a]
                 lobs_dic[lob] = sub
+                info_cache[lob] = a
             else:
                 sub.append(a)
         # filte site
@@ -233,30 +235,31 @@ def get_lines_tree(request):
             sites_dic = {}
             for a in lobs_dic.get(lob):
                 site = a.get('site')
-                sub = value.safe_get_key(sites_dic, site)
+                sub = value.safe_get_in_key(sites_dic, site)
                 if site == None:
                     pass
                 else:
                     if sub == None:
                         sub = [a]
                         sites_dic[site] = sub
+                        info_cache[lob + '/' + site] = a
                     else:
                         sub.append(a)
             lobs_dic[lob] = sites_dic
-
         # filte productLine
         for lob in lobs_dic:
             for site in lobs_dic.get(lob):
                 productLines_dic = {}
                 for a in lobs_dic.get(lob).get(site):
                     productLine = a.get('productLine')
-                    sub = value.safe_get_key(productLines_dic, productLine)
+                    sub = value.safe_get_in_key(productLines_dic, productLine)
                     if productLine == None:
                         pass
                     else:
                         if sub == None:
                             sub = [a]
                             productLines_dic[productLine] = sub
+                            info_cache[lob + '/' + site  + '/' + productLine] = a
                         else:
                             sub.append(a)
                 lobs_dic.get(lob)[site] = productLines_dic
@@ -268,13 +271,14 @@ def get_lines_tree(request):
                     projects_dic = {}
                     for a in lobs_dic.get(lob).get(site).get(productLine):
                         project = a.get('project')
-                        sub = value.safe_get_key(projects_dic, project)
+                        sub = value.safe_get_in_key(projects_dic, project)
                         if project == None:
                             pass
                         else:
                             if sub == None:
                                 sub = [a]
                                 projects_dic[project] = sub
+                                info_cache[lob + '/' + site + '/' + productLine + '/' + project] = a
                             else:
                                 sub.append(a)
                     lobs_dic.get(lob).get(site)[productLine] = projects_dic
@@ -294,38 +298,128 @@ def get_lines_tree(request):
         lobs = []
         for lob in lobs_dic:
             sites = []
+            sites_check_list_uploaded = 0
+            sites_check_list_total = 0
             for site in lobs_dic.get(lob):
                 productLines = []
+                productLines_check_list_uploaded = 0
+                productLines_check_list_total = 0
                 for productLine in lobs_dic.get(lob).get(site):
                     projects = []
+                    projects_check_list_uploaded = 0
+                    projects_check_list_total = 0
                     for project in lobs_dic.get(lob).get(site).get(productLine):
                         parts = []
+                        parts_check_list_uploaded = 0
+                        parts_check_list_total = 0
                         for e in lobs_dic.get(lob).get(site).get(productLine).get(project):
-                            # e['type'] = 'part'
+                            auditType = e.get('auditType')
+                            checkListId1 = value.safe_get_in_key(e, 'checkListId1')
+                            checkListId2 = value.safe_get_in_key(e, 'checkListId2')
+                            checkListId3 = value.safe_get_in_key(e, 'checkListId3')
+                            checkListId10 = value.safe_get_in_key(e, 'checkListId10')
+                            checkListId11 = value.safe_get_in_key(e, 'checkListId11')
+                            if team == 'accessory':
+                                if project == 'Glue' and checkListId10 != None:
+                                    parts_check_list_uploaded += 1
+                                elif project == "Destructive" and checkListId11 != None:
+                                    parts_check_list_uploaded += 1
+                                parts_check_list_total += 1
+                            else:
+                                if auditType == AuditType.Module:
+                                    if checkListId1 != None:
+                                        parts_check_list_uploaded += 1
+                                    if checkListId3 != None:
+                                        parts_check_list_uploaded += 1
+                                    parts_check_list_total += 2
+                                elif auditType == AuditType.Enclosure:
+                                    if checkListId2 != None:
+                                        parts_check_list_uploaded += 1
+                                    parts_check_list_total += 1
+                                elif auditType == AuditType.ModuleEnclosure:
+                                    if checkListId1 != None:
+                                        parts_check_list_uploaded += 1
+                                    if checkListId2 != None:
+                                        parts_check_list_uploaded += 1
+                                    if checkListId3 != None:
+                                        parts_check_list_uploaded += 1
+                                    parts_check_list_total += 3
                             parts.append({
+                                'id': e.get('id'),
+                                'team': e.get('team'),
+                                'lob': lob,
+                                'site': site,
+                                'productLine': productLine,
+                                'project': project,
+                                'part': e.get('part'),
                                 'name': e.get('part'),
-                                'auditType': e.get('auditType'),
-                                'type': 'part'
+                                'auditType': auditType,
+                                'type': 'part',
+                                'checkListId1': checkListId1,
+                                'checkListId2': checkListId2,
+                                'checkListId3': checkListId3,
+                                'checkListId10': checkListId10,
+                                'checkListId11': checkListId11,
                             })
+                        project_info = info_cache.get(lob + '/' + site + '/' + productLine + '/' + project)
                         projects.append({
+                            'id': project_info.get('id'),
+                            'team': project_info.get('team'),
+                            'auditType': project_info.get('auditType'),
+                            'lob': lob,
+                            'site': site,
+                            'productLine': productLine,
+                            'project': project,
                             'name': project,
                             'type': 'project',
-                            'sub': parts
+                            'sub': parts,
+                            'checkListUploaded': parts_check_list_uploaded,
+                            'checkListTotal': parts_check_list_total,
                         })
+                        projects_check_list_uploaded += parts_check_list_uploaded
+                        projects_check_list_total += parts_check_list_total
+                    productLine_info = info_cache.get(lob + '/' + site + '/' + productLine)
                     productLines.append({
+                        'id': productLine_info.get('id'),
+                        'team': productLine_info.get('team'),
+                        'auditType': productLine_info.get('auditType'),
+                        'lob': lob,
+                        'site': site,
+                        'productLine': productLine,
                         'name': productLine,
                         'type': 'productLine',
-                        'sub': projects
+                        'sub': projects,
+                        'checkListUploaded': projects_check_list_uploaded,
+                        'checkListTotal': projects_check_list_total,
                     })
+                    productLines_check_list_uploaded += projects_check_list_uploaded
+                    productLines_check_list_total += projects_check_list_total
+                site_info = info_cache.get(lob + '/' + site)
                 sites.append({
+                    'id': site_info.get('id'),
+                    'team': site_info.get('team'),
+                    'auditType': site_info.get('auditType'),
+                    'lob': lob,
+                    'site': site,
                     'name': site,
                     'type': 'site',
-                    'sub': productLines
+                    'sub': productLines,
+                    'checkListUploaded': productLines_check_list_uploaded,
+                    'checkListTotal': productLines_check_list_total,
                 })
+                sites_check_list_uploaded += productLines_check_list_uploaded
+                sites_check_list_total += productLines_check_list_total
+            lob_info = info_cache.get(lob)
             lobs.append({
+                'id': lob_info.get('id'),
+                'team': lob_info.get('team'),
+                'auditType': lob_info.get('auditType'),
+                'lob': lob,
                 'name': lob,
                 'type': 'lob',
-                'sub': sites
+                'sub': sites,
+                'checkListUploaded': sites_check_list_uploaded,
+                'checkListTotal': sites_check_list_total,
             })
         return response.ResponseData(lobs)
     except Line.DoesNotExist:

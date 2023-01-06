@@ -9,7 +9,7 @@ import json
 import logging
 logger = logging.getLogger('django')
 
-def safe_get_key(obj, key, placeholder=None):    
+def safe_get_in_key(obj, key, placeholder=None):
     try:
         val = obj.get(key)
         if val is None:
@@ -18,6 +18,14 @@ def safe_get_key(obj, key, placeholder=None):
             return val
     except:
         return placeholder
+
+def safe_get_in_keys(obj, keys, placeholder=None):
+    for key in keys:
+        val = safe_get_in_key(obj, key)
+        if val != None:
+            return val
+    return placeholder
+
     
 def empty(val):
     if val is None:

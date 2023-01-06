@@ -8,10 +8,11 @@ from aws_mqaserver.defines import ValidateException
 import logging
 logger = logging.getLogger('django')
 
-def generate_token(id, name, lob, role):
+def generate_token(id, team, name, lob, role):
     try:
         payload = {
             'id': id,
+            'team': team,
             'name': name,
             'lob': lob,
             'role': role,
@@ -45,3 +46,20 @@ def checkout_token_info(token_str):
         traceback.print_exc()
         raise ValidateException('Checkout Token Failed', e)
 
+
+class TokenUser:
+    id = None
+    team = None
+    name = None
+    lob = None
+    role = None
+
+def checkout_token_user(token_str):
+    dic = checkout_token_info(token_str)
+    user = TokenUser()
+    user.id = dic.get('id')
+    user.team = dic.get('team')
+    user.name = dic.get('name')
+    user.lob = dic.get('lob')
+    user.role = dic.get('role')
+    return user

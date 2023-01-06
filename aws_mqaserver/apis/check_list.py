@@ -15,7 +15,9 @@ from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
 
+from aws_mqaserver.models import CheckType
 from aws_mqaserver.models import CheckList
+from aws_mqaserver.models import Line
 from aws_mqaserver.apis import check_list_item
 
 import json
@@ -25,12 +27,9 @@ logger = logging.getLogger('django')
 # Admin Upload CheckList
 @transaction.atomic
 def upload_check_list(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorName = tokenInfo.get('name')
-    operatorId = tokenInfo.get('id')
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
@@ -39,24 +38,48 @@ def upload_check_list(request):
     type = validator.validate_integer(params, 'type')
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
-    if operatorRole != 'admin':
-        if lob != operatorLob:
+    if operator.role != 'super_admin' and operator.role != 'admin':
+        if lob != operator.lob:
             return response.ResponseError('Operation Forbidden')
     # add
     try:
-        entry = CheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
+        entry = CheckList.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
         entry.rawJson = rawJson
         entry.updateTime = datetime.datetime.now()
-        entry.updaterId = operatorId
-        entry.updater = operatorName
+        entry.updaterId = operator.id
+        entry.updater = operator.name
         entry.save()
         check_list_item._batch_delete_check_list_items(entry.id, type)
-        check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
+        check_list_item._batch_add_check_list_items(entry.id, team, type, json.loads(rawJson))
+        line = Line.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part)
+        if type == CheckType.Module:
+            line.checkListId1=entry.id
+        elif type == CheckType.Enclosure:
+            line.checkListId2=entry.id
+        elif type == CheckType.ORT:
+            line.checkListId3=entry.id
+        elif type == CheckType.Glue:
+            line.checkListId10=entry.id
+        elif type == CheckType.Destructive:
+            line.checkListId11=entry.id
+        line.save()
         return response.ResponseData('Uploaded')
     except CheckList.DoesNotExist:
-        entry = CheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type, rawJson=rawJson, createTime=datetime.datetime.now(), updaterId = operatorId, updater = operatorName)
+        entry = CheckList(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type, rawJson=rawJson, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
         entry.save()
-        check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
+        check_list_item._batch_add_check_list_items(entry.id, team, type, json.loads(rawJson))
+        line = Line.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part)
+        if type == CheckType.Module:
+            line.checkListId1 = entry.id
+        elif type == CheckType.Enclosure:
+            line.checkListId2 = entry.id
+        elif type == CheckType.ORT:
+            line.checkListId3 = entry.id
+        elif type == CheckType.Glue:
+            line.checkListId10=entry.id
+        elif type == CheckType.Destructive:
+            line.checkListId11=entry.id
+        line.save()
         return response.ResponseData('Uploaded')
     except Exception as e:
         traceback.print_exc()
@@ -64,18 +87,17 @@ def upload_check_list(request):
 
 # Get CheckLists Page
 def get_check_lists_page(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorRole = tokenInfo.get('role')
-    operatorLob = tokenInfo.get('lob')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
-    lob = value.safe_get_key(params, 'lob')
-    site = value.safe_get_key(params, 'site')
-    productLine = value.safe_get_key(params, 'productLine')
-    project = value.safe_get_key(params, 'project')
-    part = value.safe_get_key(params, 'part')
-    if operatorRole != 'admin' and operatorLob != lob:
+    lob = value.safe_get_in_key(params, 'lob')
+    site = value.safe_get_in_key(params, 'site')
+    productLine = value.safe_get_in_key(params, 'productLine')
+    project = value.safe_get_in_key(params, 'project')
+    part = value.safe_get_in_key(params, 'part')
+    if operator.role != 'admin' and operator.lob != lob:
         return response.ResponseError('Operation Forbidden')
     if part != None:
         if project == None:
@@ -90,7 +112,7 @@ def get_check_lists_page(request):
         if lob == None:
             return response.ResponseError('Params Error') 
     try:
-        list = CheckList.objects.defer('rawJson').all()
+        list = CheckList.objects.defer('rawJson').all().filter(team=team)
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:
@@ -110,6 +132,7 @@ def get_check_lists_page(request):
         for e in page:
             arr.append({
                 'id': e.id,
+                'team': e.team,
                 'type': e.type,
                 'lob': e.lob,
                 'site': e.site,
@@ -129,8 +152,9 @@ def get_check_lists_page(request):
 
 # Find One Check List
 def find_check_list(request):
-    tokenInfo = validator.check_token_info(request)
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
@@ -138,9 +162,10 @@ def find_check_list(request):
     part = validator.validate_not_empty(params, 'part')
     type = validator.validate_not_empty(params, 'type')
     try:
-        e = CheckList.objects.defer('rawJson').get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
+        e = CheckList.objects.defer('rawJson').get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
         m = {
             'id': e.id,
+            'team': e.team,
             'type': e.type,
             'lob': e.lob,
             'site': e.site,
@@ -160,10 +185,8 @@ def find_check_list(request):
     
 # Delete Check List
 def delete_check_list(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
-    if operatorRole != 'admin' and operatorRole != 'lob_manager':
+    operator = validator.checkout_token_user(request)
+    if operator.role != 'admin' and operator.role != 'lob_dri':
         return response.ResponseError('Operation Forbidden')
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')
@@ -175,9 +198,9 @@ def delete_check_list(request):
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
-    if operatorRole != 'admin':
-        # lob_manager can only delete check list in his lob
-        if entry.lob != operatorLob:
+    if operator.role != 'super_admin' and operator.role != 'admin':
+        # lob_dri can only delete check list in his lob
+        if entry.lob != operator.lob:
             return response.ResponseError('Operation Forbidden')
     # delete
     try:

@@ -23,19 +23,18 @@ logger = logging.getLogger('django')
 
 # Get MIL Items Page
 def get_mil_items_page(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorRole = tokenInfo.get('role')
-    operatorLob = tokenInfo.get('lob')     
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
-    lob = value.safe_get_key(params, 'lob')
-    site = value.safe_get_key(params, 'site')
-    productLine = value.safe_get_key(params, 'productLine')
-    project = value.safe_get_key(params, 'project')
-    part = value.safe_get_key(params, 'part')
-    if operatorRole != 'admin':
-        if operatorLob != lob:
+    lob = value.safe_get_in_key(params, 'lob')
+    site = value.safe_get_in_key(params, 'site')
+    productLine = value.safe_get_in_key(params, 'productLine')
+    project = value.safe_get_in_key(params, 'project')
+    part = value.safe_get_in_key(params, 'part')
+    if operator.role != 'super_admin' and operator.role != 'admin':
+        if operator.lob != lob:
             return response.ResponseError('Operation Forbidden')
     if part != None:
         if project == None:
@@ -50,7 +49,7 @@ def get_mil_items_page(request):
         if lob == None:
             return response.ResponseError('Params Error') 
     try:
-        list = MILItem.objects.all()
+        list = MILItem.objects.all().filter(team=team)
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:
@@ -80,9 +79,7 @@ def get_mil_items_page(request):
     
 # Delete MIL Item
 def delete_mil_item(request):
-    tokenInfo = validator.check_token_info(request)
-    operatorLob = tokenInfo.get('lob')
-    operatorRole = tokenInfo.get('role')
+    operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')
     entry = None
@@ -93,9 +90,9 @@ def delete_mil_item(request):
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
-    if operatorRole != 'admin':
-        # lob_manager can only delete check list in his lob
-        if entry.lob != operatorLob:
+    if operator.role != 'super_admin' and operator.role != 'admin':
+        # lob_dri can only delete check list in his lob
+        if entry.lob != operator.lob:
             return response.ResponseError('Operation Forbidden')
     # delete
     try:
@@ -106,11 +103,11 @@ def delete_mil_item(request):
         return response.ResponseError('System Error')
 
 
-def _batch_add_mil_items(auditItemId, lob, site, productLine, project, part, type, auditorId, auditor, dicArr):
+def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, part, type, auditorId, auditor, dicArr):
     batch = []
     for e in dicArr:
         sn = validator.validate_integer(e, 'sn')
-        type = value.safe_get_key(e, 'processType', type)
+        type = value.safe_get_in_key(e, 'processType', type)
         createTime = validator.validate_date(e, 'createTime')
         year = createTime.year
         month = createTime.month
@@ -126,20 +123,21 @@ def _batch_add_mil_items(auditItemId, lob, site, productLine, project, part, typ
         else:
             quarter = 4
         findings = validator.validate_not_empty(e, 'findings')
-        keywords = value.safe_get_key(e, 'keywords')
-        status = value.safe_get_key(e, 'status')
-        severity = value.safe_get_key(e, 'severity')
-        line = value.safe_get_key(e, 'line')
-        station = value.safe_get_key(e, 'station')
-        issueCategory = value.safe_get_key(e, 'issueCategory')
-        subCategory = value.safe_get_key(e, 'subCategory')
-        issueBrief = value.safe_get_key(e, 'issueBrief')
-        containmentAction = value.safe_get_key(e, 'containmentAction')
-        correctiveAction = value.safe_get_key(e, 'correctiveAction')
-        department = value.safe_get_key(e, 'department')
-        vendorDRI = value.safe_get_key(e, 'vendorDRI')
+        keywords = value.safe_get_in_key(e, 'keywords')
+        status = value.safe_get_in_key(e, 'status')
+        severity = value.safe_get_in_key(e, 'severity')
+        line = value.safe_get_in_key(e, 'line')
+        station = value.safe_get_in_key(e, 'station')
+        issueCategory = value.safe_get_in_key(e, 'issueCategory')
+        subCategory = value.safe_get_in_key(e, 'subCategory')
+        issueBrief = value.safe_get_in_key(e, 'issueBrief')
+        containmentAction = value.safe_get_in_key(e, 'containmentAction')
+        correctiveAction = value.safe_get_in_key(e, 'correctiveAction')
+        department = value.safe_get_in_key(e, 'department')
+        vendorDRI = value.safe_get_in_key(e, 'vendorDRI')
         item = MILItem(
             auditItemId=auditItemId,
+            team=team,
             lob=lob,
             site=site,
             productLine=productLine,
