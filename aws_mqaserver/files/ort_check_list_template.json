@@ -1,0 +1,36 @@
+[
+    {
+        "Project": "D73SPK",
+        "SN": 1,
+        "Test Item": "Accelerated mechanical stress (AMS)",
+        "Test Condition/Parameter": "Fixture: universal reliability fixture + heat sink\nTest Signal: D27SpkrLateP2_AMSSignal_12082021.wav\nVoltage:8.3Vpk\nTest Conditions:35±2℃, no condensation",
+        "Equipment": "High/Low Temperature Chamber+Power Tester",
+        "Fixture (Y/N)": "Y\n(SM-EVT)",
+        "Sample Orientation": "per REL fixture orientation",
+        "Recovery Time": "≥24H",
+        "Sample Size": "30PCS\n(W1-W6)\n9PCS\n(W7-EOL)",
+        "Sampling Freq.": "weekly",
+        "Duration": "168H",
+        "Read Point": "168H",
+        "Pass/Fail Criteria": "168hr CP must pass post-test requirements specified in section 12.1",
+        "OCAP": "1.Issue internal Quality Alert and notify Apple program core team\n2.Identify and quarantine affected lot, talk to Pack house and FATP impact if necessary \n3.FACA drive by QE/PE\n4.Effectiveness validation of the CA by QE\n5.Response to Apple within 24 hours of rejection\n6.AA retest process is allowed,and one retest is allowed.",
+        "Result (Verify Vendors execution)OK/NG": ""
+    },
+    {
+        "Project": "D73SPK",
+        "SN": 2,
+        "Test Item": "Low temperature operational lifetime (LTOL)",
+        "Test Condition/Parameter": "Test SOP:IEC 60068-2-1.\nFixture: universal reliability fixture + heat sink\nTest Signal: D27SpkrLateP2_NoiseSignal_12082021.wav\nVoltage:3.7Vrms\nTest Conditions: -20±2℃, no condensation\nProcedure Name:LTOL999.",
+        "Equipment": "High/Low Temperature Chamber+Power Tester",
+        "Fixture (Y/N)": "Y\n(SM-EVT)",
+        "Sample Orientation": "per REL fixture orientation",
+        "Recovery Time": "≥24H",
+        "Sample Size": "30PCS\n(W1-W6)\n9PCS\n(W7-EOL)",
+        "Sampling Freq.": "weekly",
+        "Duration": "168H",
+        "Read Point": "168H",
+        "Pass/Fail Criteria": "168hr CP must pass post-test requirements specified in section 12.1",
+        "OCAP": "1.Issue internal Quality Alert and notify Apple program core team\n2.Identify and quarantine affected lot, talk to Pack house and FATP impact if necessary \n3.FACA drive by QE/PE\n4.Effectiveness validation of the CA by QE\n5.Response to Apple within 24 hours of rejection\n6.AA retest process is allowed,and one retest is allowed.",
+        "Result (Verify Vendors execution)OK/NG": ""
+    }
+  ]

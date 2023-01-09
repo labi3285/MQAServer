@@ -268,8 +268,8 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             projects = validator.validate_not_empty(e, 'Projects')
             item = validator.validate_not_empty(e, 'Item')
             unit = validator.validate_not_empty(e, 'Unit')
-            LSL = validator.validate_not_empty(e, 'LSL')
-            USL = validator.validate_not_empty(e, 'USL')
+            LSL = value.safe_get_in_key(e, 'LSL', '')
+            USL = value.safe_get_in_key(e, 'USL', '')
             item = CheckListItemGlue(
                 checkListId=checkListId,
                 team=team,
@@ -297,7 +297,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             projects = validator.validate_not_empty(e, 'Projects')
             item = validator.validate_not_empty(e, 'Item')
             unit = validator.validate_not_empty(e, 'Unit')
-            LSL = validator.validate_not_empty(e, 'LSL')
+            LSL = value.safe_get_in_key(e, 'LSL', '')
             item = CheckListItemDestructive(
                 checkListId=checkListId,
                 team=team,

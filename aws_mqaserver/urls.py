@@ -33,8 +33,10 @@ import aws_mqaserver.apis.audit_item
 import aws_mqaserver.apis.kappa_item
 import aws_mqaserver.apis.oba_item
 import aws_mqaserver.apis.mil_item
+import aws_mqaserver.apis.file
 
 urlpatterns = [
+
     path('login', aws_mqaserver.apis.user.login),
     path('add_user', aws_mqaserver.apis.user.add_user),
     path('get_users_page', aws_mqaserver.apis.user.get_users_page),
@@ -66,6 +68,8 @@ urlpatterns = [
 
     path('get_mil_items_page', aws_mqaserver.apis.mil_item.get_mil_items_page),
     path('delete_mil_item', aws_mqaserver.apis.mil_item.delete_mil_item),
+
+    path('download_file', aws_mqaserver.apis.file.download_file),
 
     path('admin/', admin.site.urls),
     path('downloadCheckList/', downloadCheckList),

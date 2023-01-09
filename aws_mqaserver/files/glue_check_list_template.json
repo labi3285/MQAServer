@@ -1,0 +1,24 @@
+[
+    {
+        "SN": 1,
+        "Line&Shift": "Line1A",
+        "Class": 1,
+        "Site": "ITCZ",
+        "Projects": "A246",
+        "Item": "Jet UV glue on soldering joints(Top)",
+        "Unit": "mg",
+        "USL": 7,
+        "LSL": 5
+    },
+    {
+        "SN": 2,
+        "Line&Shift": "Line1A",
+        "Class": 2,
+        "Site": "ITCZ",
+        "Projects": "A246",
+        "Item": "Jet UV glue on soldering joints(Top)",
+        "Unit": "mg",
+        "USL": 7,
+        "LSL": 5
+    }
+]
