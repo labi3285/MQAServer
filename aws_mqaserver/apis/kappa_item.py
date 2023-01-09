@@ -40,10 +40,11 @@ def upload_kappa_item(request):
     FQCKappaSkillMatrixScores = validator.validate_not_empty(params, 'FQCKappaSkillMatrixScores')
     FQCKappaSkillMatrixAverageScore = validator.validate_float(params, 'FQCKappaSkillMatrixAverageScore')
     auditor = value.safe_get_in_key(params, 'auditor')
+    uploadTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
     entry = KAPPAItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                      beginTime=beginTime, endTime=endTime,
+                      beginTime=beginTime, endTime=endTime, uploadTime=uploadTime,
                       year=year,
                       highlight=highlight,
                       scoreLossItem=scoreLossItem,

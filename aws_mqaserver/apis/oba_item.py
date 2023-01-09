@@ -39,10 +39,11 @@ def upload_oba_item(request):
     score = validator.validate_float(params, 'score')
     findings = validator.validate_not_empty(params, 'findings')
     auditor = value.safe_get_in_key(params, 'auditor')
+    uploadTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
     entry = OBAItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                      beginTime=beginTime, endTime=endTime,
+                      beginTime=beginTime, endTime=endTime, uploadTime=uploadTime,
                       year=year,
                       highlight=highlight,
                       scoreLossItem=scoreLossItem,
