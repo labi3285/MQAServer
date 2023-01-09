@@ -14,6 +14,7 @@ from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
+from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import CheckType
 from aws_mqaserver.models import CheckList
@@ -39,7 +40,7 @@ def upload_check_list(request):
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
     if operator.role != 'super_admin' and operator.role != 'admin':
-        if lob != operator.lob:
+        if not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # add
     try:
@@ -97,7 +98,7 @@ def get_check_lists_page(request):
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
-    if operator.role != 'admin' and operator.lob != lob:
+    if operator.role != 'admin' and not ids.contains_id(lob, operator.lob):
         return response.ResponseError('Operation Forbidden')
     if part != None:
         if project == None:
@@ -200,7 +201,7 @@ def delete_check_list(request):
         return response.ResponseError('System Error')
     if operator.role != 'super_admin' and operator.role != 'admin':
         # lob_dri can only delete check list in his lob
-        if entry.lob != operator.lob:
+        if not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # delete
     try:

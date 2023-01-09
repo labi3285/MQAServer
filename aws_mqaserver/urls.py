@@ -32,12 +32,14 @@ import aws_mqaserver.apis.check_list_item
 import aws_mqaserver.apis.audit_item
 import aws_mqaserver.apis.kappa_item
 import aws_mqaserver.apis.oba_item
+import aws_mqaserver.apis.mil_item
 
 urlpatterns = [
     path('login', aws_mqaserver.apis.user.login),
     path('add_user', aws_mqaserver.apis.user.add_user),
     path('get_users_page', aws_mqaserver.apis.user.get_users_page),
     path('delete_user', aws_mqaserver.apis.user.delete_user),
+    path('refresh_user', aws_mqaserver.apis.user.refresh_user),
     path('change_user_role', aws_mqaserver.apis.user.change_user_role),
     path('update_user_status', aws_mqaserver.apis.user.update_user_status),
     path('reset_user_password', aws_mqaserver.apis.user.reset_user_password),
@@ -61,6 +63,9 @@ urlpatterns = [
     path('get_kappa_items_for_year', aws_mqaserver.apis.kappa_item.get_kappa_items_for_year),
     path('upload_oba_item', aws_mqaserver.apis.oba_item.upload_oba_item),
     path('get_oba_items_for_year', aws_mqaserver.apis.oba_item.get_oba_items_for_year),
+
+    path('get_mil_items_page', aws_mqaserver.apis.mil_item.get_mil_items_page),
+    path('delete_mil_item', aws_mqaserver.apis.mil_item.delete_mil_item),
 
     path('admin/', admin.site.urls),
     path('downloadCheckList/', downloadCheckList),

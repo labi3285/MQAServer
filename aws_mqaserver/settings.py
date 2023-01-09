@@ -102,17 +102,17 @@ WSGI_APPLICATION = 'aws_mqaserver.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-#DATABASES = {
-#    'default':
-#    {
-#        'ENGINE': 'django.db.backends.mysql',    # 数据库引擎
-#        'NAME': 'db_smart_audit_test', # 数据库名称
-#        'HOST': '127.0.0.1', # 数据库地址，本机 ip 地址 127.0.0.1
-#        'PORT': 3306, # 端口
-#        'USER': 'root',  # 数据库用户名
-#        'PASSWORD': '12345678', # 数据库密码
-#    }
-#}
+# DATABASES = {
+#     'default':
+#     {
+#         'ENGINE': 'django.db.backends.mysql',    # 数据库引擎
+#         'NAME': 'db_smart_audit_test', # 数据库名称
+#         'HOST': '127.0.0.1', # 数据库地址，本机 ip 地址 127.0.0.1
+#         'PORT': 3306, # 端口
+#         'USER': 'root',  # 数据库用户名
+#         'PASSWORD': '12345678', # 数据库密码
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

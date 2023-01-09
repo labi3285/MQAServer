@@ -1,6 +1,7 @@
 
 from django.forms.models import model_to_dict
 from django.db.models import Q
+from django.db import transaction
 
 from django.core.paginator import Paginator
 import logging
@@ -12,7 +13,9 @@ from aws_mqaserver.utils import value
 from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
+from aws_mqaserver.utils import ids
 
+from aws_mqaserver.models import User
 from aws_mqaserver.models import AuditType
 from aws_mqaserver.models import Line
 
@@ -21,6 +24,7 @@ import json
 logger = logging.getLogger('django')
 
 # Add Line
+@transaction.atomic
 def add_line(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
@@ -38,14 +42,11 @@ def add_line(request):
     if productLine != None and site == None:
         return response.ResponseError('Params Error')
     if operator.role != 'super_admin' and operator.role != 'admin':
-        # only admin can add top level
-        if site == None:
-            return response.ResponseError('Operation Forbidden')
         # only lob_dri and admin can add line
         if operator.role != 'lob_dri':
-            return response.ResponseError('Operation Forbidden') 
+            return response.ResponseError('Operation Forbidden')
         # lob_dri can only add lob sub line
-        if lob != operator.lob:
+        if site != None and not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # check duplicate name
     try:
@@ -56,14 +57,15 @@ def add_line(request):
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
+    # DRI create lob should add himself to this lob
+    if site == None and operator.role == 'lob_dri':
+        user = User.objects.get(id=operator.id)
+        user.lob = user.lob + lob + '/'
+        user.save()
     # add line
-    try:
-        line = Line(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
-        line.save()
-        return response.ResponseData('Add Success')
-    except Exception:
-        traceback.print_exc()
-        return response.ResponseError('System Error')
+    line = Line(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
+    line.save()
+    return response.ResponseData('Add Success')
 
 # Delete Line
 def delete_line(request):
@@ -86,7 +88,7 @@ def delete_line(request):
         if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden') 
         # lob_dri can only delete lob sub line
-        if line.lob != operator.lob:
+        if not ids.contains_id(line.lob, operator.lob):
             return response.ResponseError('Operation Forbidden') 
     # delete line
     try:
@@ -336,14 +338,12 @@ def get_lines_tree(request):
                                     if checkListId2 != None:
                                         parts_check_list_uploaded += 1
                                     parts_check_list_total += 1
-                                elif auditType == AuditType.ModuleEnclosure:
-                                    if checkListId1 != None:
-                                        parts_check_list_uploaded += 1
+                                elif auditType == AuditType.AudioHome:
                                     if checkListId2 != None:
                                         parts_check_list_uploaded += 1
                                     if checkListId3 != None:
                                         parts_check_list_uploaded += 1
-                                    parts_check_list_total += 3
+                                    parts_check_list_total += 2
                             parts.append({
                                 'id': e.get('id'),
                                 'team': e.get('team'),

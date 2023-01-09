@@ -12,7 +12,7 @@ logger = logging.getLogger('django')
 def safe_get_in_key(obj, key, placeholder=None):
     try:
         val = obj.get(key)
-        if val is None:
+        if val is None or val == '':
             return placeholder
         else:
             return val

@@ -5,7 +5,7 @@ from django.db import models
 class AuditType():
     Module = 1
     Enclosure = 2
-    ModuleEnclosure = 3
+    AudioHome = 3
 
 class CheckType():
     Module = 1
@@ -88,6 +88,10 @@ class CheckListItemModule(models.Model):
     responsePlan = models.CharField('responsePlan', null=False, max_length=999)
     sopNo = models.CharField('sopNo', null=False, max_length=99)
     result = models.CharField('result', null=False, max_length=99)
+    auditSampleSize = models.CharField('auditSampleSize', null=False, max_length=255)
+    disScore = models.IntegerField('disScore', null=True)
+    disTimes = models.IntegerField('disTimes', null=True)
+    hidden = models.BooleanField('hidden', null=True)
     class Meta:
         db_table = 't_sa_check_list_item_module'
         
@@ -104,6 +108,10 @@ class CheckListItemEnclosure(models.Model):
     lookingFor = models.CharField('lookingFor', null=False, max_length=999)
     recordsFindings = models.CharField('recordsFindings', null=False, max_length=999)
     result = models.CharField('result', null=False, max_length=99)
+    auditSampleSize = models.CharField('auditSampleSize', null=False, max_length=255)
+    disScore = models.IntegerField('disScore', null=True)
+    disTimes = models.IntegerField('disTimes', null=True)
+    hidden = models.BooleanField('hidden', null=True)
     class Meta:
         db_table = 't_sa_check_list_item_enclosure'
         
@@ -126,6 +134,9 @@ class CheckListItemORT(models.Model):
     passFailCriteria = models.CharField('passFailCriteria', null=False, max_length=999)
     OCAP = models.CharField('OCAP', null=False, max_length=999)
     result = models.CharField('result', null=False, max_length=99)
+    disScore = models.IntegerField('disScore', null=True)
+    disTimes = models.IntegerField('disTimes', null=True)
+    hidden = models.BooleanField('hidden', null=True)
     class Meta:
         db_table = 't_sa_check_list_item_ort'
 
@@ -139,7 +150,6 @@ class CheckListItemGlue(models.Model):
     site = models.CharField('site', null=False, max_length=99)
     projects = models.CharField('projects', null=False, max_length=99)
     item = models.CharField('item', null=False, max_length=255)
-    glue = models.CharField('glue', null=False, max_length=255)
     unit = models.CharField('unit', null=False, max_length=255)
     LSL = models.CharField('LSL', null=False, max_length=99)
     USL = models.CharField('USL', null=False, max_length=99)
@@ -174,6 +184,7 @@ class AuditItem(models.Model):
     rawJson = models.TextField('rawJson', null=False)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
+    uploadTime = models.DateTimeField('uploadTime', null=False)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
     auditorId = models.BigIntegerField('auditorId', null=False)

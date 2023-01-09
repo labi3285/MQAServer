@@ -14,6 +14,7 @@ from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
+from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import MILItem
 
@@ -34,7 +35,7 @@ def get_mil_items_page(request):
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
     if operator.role != 'super_admin' and operator.role != 'admin':
-        if operator.lob != lob:
+        if lob != None and not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     if part != None:
         if project == None:
@@ -92,7 +93,7 @@ def delete_mil_item(request):
         return response.ResponseError('System Error')
     if operator.role != 'super_admin' and operator.role != 'admin':
         # lob_dri can only delete check list in his lob
-        if entry.lob != operator.lob:
+        if not ids.contains_id(entry.lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # delete
     try:

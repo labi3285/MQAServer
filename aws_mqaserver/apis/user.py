@@ -8,6 +8,7 @@ from aws_mqaserver.utils import value
 from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
+from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import User
 
@@ -36,7 +37,7 @@ def login(request):
                 'id': id,
                 'team': team,
                 'account': 'admin',
-                'lob': lob,
+                'lob': ids.get_ids(lob),
                 'role': role
             },
             'token': _token
@@ -52,6 +53,7 @@ def login(request):
         _token = token.generate_token(user.id, user.team, user.account, user.lob, user.role)
         dict = model_to_dict(user)
         dict['password'] = None
+        dict['lob'] = ids.get_ids(dict.get('lob'))
         return response.ResponseData({
             'user': dict,
             'token': _token
@@ -61,6 +63,22 @@ def login(request):
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
+
+
+def refresh_user(request):
+    operator = validator.checkout_token_user(request)
+    user = User.objects.get(id=operator.id)
+    _token = token.generate_token(user.id, user.team, user.account, user.lob, user.role)
+    dict = model_to_dict(user)
+    dict['password'] = None
+    dict['lob'] = ids.get_ids(dict.get('lob'))
+    return response.ResponseData({
+        'user': dict,
+        'token': _token
+    })
+
+
+
 
 # Add Users
 def add_user(request):
@@ -72,6 +90,7 @@ def add_user(request):
     lob = None
     if role != 'super_admin' and role != 'admin':
         lob = validator.validate_not_empty(params, 'lob')
+        lob = ids.format_ids(lob)
     if operator.role != 'super_admin' and operator.role != 'admin':
         # Only admin can add admin or lob_dri
         if role == 'super_admin' or role == 'admin' or role == 'lob_dri':
@@ -80,7 +99,7 @@ def add_user(request):
         if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden')
         # Lob Manager can only add user in the same lob
-        if operator.lob != lob:
+        if not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # can not use name as 'admin'
     if account == 'admin':
@@ -102,7 +121,7 @@ def add_user(request):
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
-        
+
 
 # Change User Role
 def change_user_role(request):
@@ -110,11 +129,10 @@ def change_user_role(request):
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')
     role = validator.validate_not_empty(params, 'role')
-    
     lob = None
     if role != 'admin':
         lob = validator.validate_not_empty(params, 'lob')
-
+        lob = ids.format_ids(lob)
     if operator.role != 'super_admin' and operator.role != 'admin':
         # Only admin can add admin or lob_dri
         if role == 'super_admin' or role == 'admin' or role == 'lob_dri':
@@ -123,9 +141,8 @@ def change_user_role(request):
         if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden')
         # Lob Manager can only add user in the same lob
-        if operator.lob != lob:
+        if not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
-    
     try:
         user = User.objects.filter(id=id)
         user.update(role=role, lob=lob)
@@ -144,20 +161,20 @@ def get_users_page(request):
     params = json.loads(request.body.decode())
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
+    team = validator.get_team(params, operator)
     account = value.safe_get_in_key(params, 'account')
     role = value.safe_get_in_key(params, 'role')
     lob = value.safe_get_in_key(params, 'lob')
     if operator.role == 'lob_dri':
         lob = operator.lob
     try:
-        list = User.objects.all().order_by("createTime")
+        list = User.objects.all().filter(team=team).order_by("createTime")
         if account != None:
             list = list.filter(account=account)
         if role != None:
             list = list.filter(role=role)
         if lob != None:
-            logger.info('xxxxxxxxxxxxxxx')
-            list = list.filter(lob=lob)  
+            list = list.filter(lob=lob)
         if list is None:
             return response.ResponseData({
                 'total': 0,
@@ -168,6 +185,7 @@ def get_users_page(request):
         arr = []
         for user in page:
             dict = model_to_dict(user)
+            dict['lob'] = ids.get_ids(dict.get('lob'))
             dict['password'] = None
             arr.append(dict)
         return response.ResponseData({
@@ -181,7 +199,6 @@ def get_users_page(request):
 # Update User Status
 def update_user_status(request):
     operator = validator.checkout_token_user(request)
-    operator.id = token_info.get('id')
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')    
     status = validator.validate_integer(params, 'status', min=0, max=1)    
@@ -194,7 +211,7 @@ def update_user_status(request):
             if user.role == 'admin' or user.role == 'lob_dri':
                 return response.ResponseError('Operation Forbidden')
             # LOB Manager can not edit users in other lobs
-            if user.lob != operator.lob:
+            if not ids.contains_ids(user.lob, operator.lob):
                 return response.ResponseError('Operation Forbidden')
         except User.DoesNotExist:
             return response.ResponseError('User Not Exist')
@@ -282,7 +299,7 @@ def delete_user(request):
             if user.role == 'admin' or user.role == 'lob_dri':
                 return response.ResponseError('Operation Forbidden')
             # LOB Manager can not delete users in other lobs
-            if user.lob != operator.lob:
+            if not ids.contains_ids(user.lob, operator.lob):
                 return response.ResponseError('Operation Forbidden')
         except User.DoesNotExist:
             return response.ResponseError('User Not Exist')

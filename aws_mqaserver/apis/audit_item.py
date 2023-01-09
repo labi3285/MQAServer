@@ -13,6 +13,7 @@ from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
+from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import AuditItem
 from aws_mqaserver.apis import mil_item
@@ -37,6 +38,7 @@ def upload_audit_item(request):
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
     auditor = value.safe_get_in_key(params, 'auditor')
+    uploadTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
     passCount = 0
@@ -63,7 +65,7 @@ def upload_audit_item(request):
                 if isDone:
                     passCount += 1
     entry = AuditItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                        beginTime=beginTime, endTime=endTime, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
+                        beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
     if findingsArr != None and len(findingsArr) > 0:

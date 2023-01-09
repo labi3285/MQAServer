@@ -13,6 +13,7 @@ from aws_mqaserver.utils import value
 from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
+from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import CheckType
 from aws_mqaserver.models import CheckListItemModule
@@ -141,6 +142,10 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             responsePlan = value.safe_get_in_key(e, 'Response plan', '')
             sopNo = value.safe_get_in_key(e, 'SOP-NO.', '')
             result = value.safe_get_in_key(e, 'Result (Verify Vendors execution)OK/NG', '')
+            auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
+            disScore = value.safe_get_in_key(e, 'DIS Score')
+            disTimes = value.safe_get_in_key(e, 'Times')
+            hidden = value.safe_get_in_key(e, 'Hidden')
             item = CheckListItemModule(
                 checkListId=checkListId,
                 team=team,
@@ -164,6 +169,10 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
                 responsePlan=responsePlan,
                 sopNo=sopNo,
                 result=result,
+                auditSampleSize=auditSampleSize,
+                disScore=disScore,
+                disTimes=disTimes,
+                hidden=hidden,
                 )
             batch.append(item)
         CheckListItemModule.objects.bulk_create(batch, batch_size=len(batch))    
@@ -179,6 +188,10 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             lookingFor = value.safe_get_in_keys(e, ['Looking For', 'Looking-for'], '')
             recordsFindings = value.safe_get_in_key(e, ['Records Findings', 'Records/Findings'], '')
             result = value.safe_get_in_key(e, 'Result', '')
+            auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
+            disScore = value.safe_get_in_key(e, 'DIS Score')
+            disTimes = value.safe_get_in_key(e, 'Times')
+            hidden = value.safe_get_in_key(e, 'Hidden')
             item = CheckListItemEnclosure(
                 checkListId=checkListId,
                 team=team,
@@ -191,6 +204,10 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
                 lookingFor=lookingFor,
                 recordsFindings=recordsFindings,
                 result=result,
+                auditSampleSize=auditSampleSize,
+                disScore=disScore,
+                disTimes=disTimes,
+                hidden=hidden,
                 )
             batch.append(item)
         CheckListItemEnclosure.objects.bulk_create(batch, batch_size=len(batch))
@@ -212,6 +229,9 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             passFailCriteria = value.safe_get_in_key(e, 'Pass/Fail Criteria', '')
             OCAP = value.safe_get_in_key(e, 'OCAP', '')
             result = value.safe_get_in_key(e, 'Result (Verify Vendors execution)OK/NG', '')
+            disScore = value.safe_get_in_key(e, 'DIS Score')
+            disTimes = value.safe_get_in_key(e, 'Times')
+            hidden = value.safe_get_in_key(e, 'Hidden')
             item = CheckListItemORT(
                 checkListId=checkListId,
                 team=team,
@@ -230,6 +250,9 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
                 passFailCriteria=passFailCriteria,
                 OCAP=OCAP,
                 result=result,
+                disScore=disScore,
+                disTimes=disTimes,
+                hidden=hidden,
                 )
             batch.append(item)
         if len(batch) > 0:
@@ -239,22 +262,22 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
         batch = []
         for e in dicArr:
             sn = validator.validate_not_empty(e, 'SN')
+            site = validator.validate_not_empty(e, 'Site')
             theClass = validator.validate_not_empty(e, 'Class')
             lineShift = validator.validate_not_empty(e, 'Line&Shift')
             projects = validator.validate_not_empty(e, 'Projects')
             item = validator.validate_not_empty(e, 'Item')
             unit = validator.validate_not_empty(e, 'Unit')
-            glue = validator.validate_not_empty(e, 'Glue')
             LSL = validator.validate_not_empty(e, 'LSL')
             USL = validator.validate_not_empty(e, 'USL')
             item = CheckListItemGlue(
                 checkListId=checkListId,
                 team=team,
                 sn=sn,
+                site=site,
                 theClass=theClass,
                 lineShift=lineShift,
                 projects=projects,
-                glue=glue,
                 item=item,
                 unit=unit,
                 LSL=LSL,
@@ -268,6 +291,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
         batch = []
         for e in dicArr:
             sn = validator.validate_not_empty(e, 'SN')
+            site = validator.validate_not_empty(e, 'Site')
             theClass = validator.validate_not_empty(e, 'Class')
             lineShift = validator.validate_not_empty(e, 'Line&Shift')
             projects = validator.validate_not_empty(e, 'Projects')
@@ -278,6 +302,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
                 checkListId=checkListId,
                 team=team,
                 sn=sn,
+                site=site,
                 theClass=theClass,
                 lineShift=lineShift,
                 projects=projects,
