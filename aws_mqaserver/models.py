@@ -91,7 +91,7 @@ class CheckListItemModule(models.Model):
     auditSampleSize = models.CharField('auditSampleSize', null=False, max_length=255)
     disScore = models.IntegerField('disScore', null=True)
     disTimes = models.IntegerField('disTimes', null=True)
-    hidden = models.BooleanField('hidden', null=True)
+    skip = models.BooleanField('skip', null=True)
     class Meta:
         db_table = 't_sa_check_list_item_module'
         
@@ -100,10 +100,10 @@ class CheckListItemEnclosure(models.Model):
     team = models.CharField(null=False, max_length=99)
     checkListId = models.BigIntegerField(null=False)
     sn = models.IntegerField('sn', null=False)
-    area = models.CharField('area', null=False, max_length=255)
+    area = models.CharField('area', null=True, max_length=255)
     mainProcess = models.CharField('mainProcess', null=False, max_length=255)
     subProcess = models.CharField('subProcess', null=False, max_length=255)
-    checkItems = models.CharField('checkItems', null=False, max_length=999)
+    checkItems = models.TextField('checkItems', null=False)
     samplingSize = models.CharField('samplingSize', null=False, max_length=999)
     lookingFor = models.CharField('lookingFor', null=False, max_length=999)
     recordsFindings = models.CharField('recordsFindings', null=False, max_length=999)
@@ -111,7 +111,7 @@ class CheckListItemEnclosure(models.Model):
     auditSampleSize = models.CharField('auditSampleSize', null=False, max_length=255)
     disScore = models.IntegerField('disScore', null=True)
     disTimes = models.IntegerField('disTimes', null=True)
-    hidden = models.BooleanField('hidden', null=True)
+    skip = models.BooleanField('skip', null=True)
     class Meta:
         db_table = 't_sa_check_list_item_enclosure'
         
@@ -136,7 +136,7 @@ class CheckListItemORT(models.Model):
     result = models.CharField('result', null=False, max_length=99)
     disScore = models.IntegerField('disScore', null=True)
     disTimes = models.IntegerField('disTimes', null=True)
-    hidden = models.BooleanField('hidden', null=True)
+    skip = models.BooleanField('skip', null=True)
     class Meta:
         db_table = 't_sa_check_list_item_ort'
 
@@ -189,6 +189,7 @@ class AuditItem(models.Model):
     createTime = models.DateTimeField(null=True)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
+    skipCount = models.IntegerField('skipCount', null=False)
     passCount = models.IntegerField('passCount', null=False)
     failCount = models.IntegerField('failCount', null=False)
     doneCount = models.IntegerField('doneCount', null=False)

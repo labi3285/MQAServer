@@ -145,7 +145,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
             disScore = value.safe_get_in_key(e, 'DIS Score')
             disTimes = value.safe_get_in_key(e, 'Times')
-            hidden = value.safe_get_in_key(e, 'Hidden')
+            skip = value.safe_get_in_key(e, 'Skip')
             item = CheckListItemModule(
                 checkListId=checkListId,
                 team=team,
@@ -172,7 +172,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
                 auditSampleSize=auditSampleSize,
                 disScore=disScore,
                 disTimes=disTimes,
-                hidden=hidden,
+                skip=skip,
                 )
             batch.append(item)
         CheckListItemModule.objects.bulk_create(batch, batch_size=len(batch))    
@@ -180,7 +180,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
         batch = []
         for e in dicArr:
             sn = validator.validate_integer(e, 'SN')
-            area = validator.validate_not_empty(e, 'Area')
+            area = value.safe_get_in_key(e, 'Area', '')
             mainProcess = validator.validate_not_empty_in_keys(e, ['Main process', 'Process'])
             subProcess = validator.validate_not_empty_in_keys(e, ['Sub process (Station/Process description)', 'Sub-Process/Section'])
             checkItems = validator.validate_not_empty(e, 'Check Items')
@@ -191,7 +191,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
             disScore = value.safe_get_in_key(e, 'DIS Score')
             disTimes = value.safe_get_in_key(e, 'Times')
-            hidden = value.safe_get_in_key(e, 'Hidden')
+            skip = value.safe_get_in_key(e, 'Skip')
             item = CheckListItemEnclosure(
                 checkListId=checkListId,
                 team=team,
@@ -207,7 +207,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
                 auditSampleSize=auditSampleSize,
                 disScore=disScore,
                 disTimes=disTimes,
-                hidden=hidden,
+                skip=skip,
                 )
             batch.append(item)
         CheckListItemEnclosure.objects.bulk_create(batch, batch_size=len(batch))
@@ -231,7 +231,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
             result = value.safe_get_in_key(e, 'Result (Verify Vendors execution)OK/NG', '')
             disScore = value.safe_get_in_key(e, 'DIS Score')
             disTimes = value.safe_get_in_key(e, 'Times')
-            hidden = value.safe_get_in_key(e, 'Hidden')
+            skip = value.safe_get_in_key(e, 'Skip')
             item = CheckListItemORT(
                 checkListId=checkListId,
                 team=team,
@@ -252,7 +252,7 @@ def _batch_add_check_list_items(checkListId, team, type, dicArr):
                 result=result,
                 disScore=disScore,
                 disTimes=disTimes,
-                hidden=hidden,
+                skip=skip,
                 )
             batch.append(item)
         if len(batch) > 0:

@@ -41,6 +41,7 @@ def upload_audit_item(request):
     uploadTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
+    skipCount = 0
     passCount = 0
     failCount = 0
     doneCount = 0
@@ -52,6 +53,9 @@ def upload_audit_item(request):
         findingsArr = []
         for e in arr:
             totalCount += 1
+            isSkip = value.safe_get_in_key(e, 'isSkip', False)
+            if isSkip:
+                skipCount += 1
             isDone = value.safe_get_in_key(e, 'isDone', False)
             if isDone:
                 doneCount += 1
@@ -65,7 +69,7 @@ def upload_audit_item(request):
                 if isDone:
                     passCount += 1
     entry = AuditItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                        beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
+                        beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, skipCount=skipCount, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
     if findingsArr != None and len(findingsArr) > 0:
