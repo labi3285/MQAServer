@@ -1,5 +1,6 @@
 from django.forms.models import model_to_dict
 from django.core.paginator import Paginator
+
 from django.conf import settings
 import datetime
 import traceback
@@ -141,7 +142,10 @@ def change_user_role(request):
         if operator.role != 'lob_dri':
             return response.ResponseError('Operation Forbidden')
         # Lob Manager can only add user in the same lob
-        if not ids.contains_id(lob, operator.lob):
+        if not ids.contains_ids(lob, operator.lob):
+            logger.info(operator.lob)
+            logger.info(lob)
+
             return response.ResponseError('Operation Forbidden')
     try:
         user = User.objects.filter(id=id)
@@ -165,8 +169,6 @@ def get_users_page(request):
     account = value.safe_get_in_key(params, 'account')
     role = value.safe_get_in_key(params, 'role')
     lob = value.safe_get_in_key(params, 'lob')
-    if operator.role == 'lob_dri':
-        lob = operator.lob
     try:
         list = User.objects.all().filter(team=team).order_by("createTime")
         if account != None:

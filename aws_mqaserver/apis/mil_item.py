@@ -16,11 +16,158 @@ from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
 from aws_mqaserver.utils import ids
 
+from aws_mqaserver.models import CheckType
 from aws_mqaserver.models import MILItem
 
 import json
 
 logger = logging.getLogger('django')
+
+def update_mil_item(request):
+    operator = validator.checkout_token_user(request)
+    params = json.loads(request.body.decode())
+    team = validator.get_team(params, operator)
+    id = value.safe_get_in_key(params, 'id')
+    type = validator.validate_not_empty(params, 'type')
+    lob = validator.validate_not_empty(params, 'lob')
+    site = value.safe_get_in_key(params, 'site')
+    productLine = value.safe_get_in_key(params, 'productLine')
+    project = value.safe_get_in_key(params, 'project')
+    part = value.safe_get_in_key(params, 'part')
+    if operator.role == 'admin' and operator.team != team:
+        return response.ResponseError('Operation Forbidden')
+    if (operator.role == 'lob_dri' or operator.role == 'lob_auditor') and (operator.team != team or not ids.contains_id(lob, operator.lob)):
+        return response.ResponseError('Operation Forbidden')
+    sn = 0
+    createTime = datetime.datetime.now()
+    year = createTime.year
+    month = createTime.month
+    week = int(createTime.strftime("%W")) + 1
+    day = createTime.day
+    quarter = None
+    if month < 4:
+        quarter = 1
+    elif month < 7:
+        quarter = 2
+    elif month < 10:
+        quarter = 3
+    else:
+        quarter = 4
+    findings = validator.validate_not_empty(params, 'findings')
+    keywords = value.safe_get_in_key(params, 'keywords')
+    status = value.safe_get_in_key(params, 'status')
+    severity = value.safe_get_in_key(params, 'severity')
+    line = value.safe_get_in_key(params, 'line')
+    station = value.safe_get_in_key(params, 'station')
+    issueCategory = value.safe_get_in_key(params, 'issueCategory')
+    subCategory = value.safe_get_in_key(params, 'subCategory')
+    issueBrief = value.safe_get_in_key(params, 'issueBrief')
+    containmentAction = value.safe_get_in_key(params, 'containmentAction')
+    correctiveAction = value.safe_get_in_key(params, 'correctiveAction')
+    department = value.safe_get_in_key(params, 'department')
+    vendorDRI = value.safe_get_in_key(params, 'vendorDRI')
+    productCategory = value.safe_get_in_key(params, 'productCategory')
+    byAuditCategory = value.safe_get_in_key(params, 'byAuditCategory')
+    failureAnalysisRootCause = value.safe_get_in_key(params, 'failureAnalysisRootCause')
+    programRelated = value.safe_get_in_key(params, 'programRelated')
+    FA = value.safe_get_in_key(params, 'FA')
+    CA = value.safe_get_in_key(params, 'CA')
+    MILDescription = value.safe_get_in_key(params, 'MILDescription')
+    process = None
+    if type == CheckType.Module:
+        process = 'Module'
+    elif type == CheckType.Enclosure:
+        process = 'Enclosure'
+    elif type == CheckType.ORT:
+        process = 'ORT'
+    if id == None:
+        entry = MILItem(
+            team=team,
+            lob=lob,
+            site=site,
+            productLine=productLine,
+            project=project,
+            part=part,
+            sn=sn,
+            type=type,
+            year=year,
+            month=month,
+            day=day,
+            quarter=quarter,
+            week=week,
+            factory=site,
+            process=process,
+            findings=findings,
+            keywords=keywords,
+            status=status,
+            severity=severity,
+            line=line,
+            vendor=site,
+            station=station,
+            projectPart=project + part,
+            productCategory=productCategory,
+            byAuditCategory=byAuditCategory,
+            failureAnalysisRootCause=failureAnalysisRootCause,
+            programRelated=programRelated,
+            issueCategory=issueCategory,
+            subCategory=subCategory,
+            issueBrief=issueBrief,
+            containmentAction=containmentAction,
+            correctiveAction=correctiveAction,
+            department=department,
+            vendorDRI=vendorDRI,
+            FA=FA,
+            CA=CA,
+            MILDescription=MILDescription,
+            createTime=createTime,
+            auditorId=operator.id,
+            auditor=operator.name,
+        )
+        entry.save()
+        return response.ResponseData('Add Success')
+    else:
+        entry = MILItem.objects.get(id=id)
+        # entry.team = team
+        # entry.lob = lob
+        # entry.site = site
+        # entry.productLine = productLine
+        # entry.project = project
+        # entry.part = part
+        # entry.sn = sn
+        # entry.type = type
+        # entry.year = year
+        # entry.month = month
+        # entry.day = day
+        # entry.quarter = quarter
+        # entry.week = week
+        # entry.factory = site
+        # entry.process = process
+        # entry.line = line
+        # entry.site = site
+        # entry.station = station
+        # entry.projectPart = project + part
+        entry.findings = findings
+        entry.keywords = keywords
+        entry.status = status
+        entry.severity = severity
+        entry.byAuditCategory = byAuditCategory
+        entry.programRelated = programRelated
+        entry.issueCategory = issueCategory
+        entry.subCategory = subCategory
+        entry.issueBrief = issueBrief
+        entry.containmentAction = containmentAction
+        entry.correctiveAction = correctiveAction
+        entry.productCategory = productCategory
+        entry.byAuditCategory = byAuditCategory
+        entry.failureAnalysisRootCause = failureAnalysisRootCause
+        entry.department = department
+        entry.vendorDRI = vendorDRI
+        entry.FA=FA
+        entry.CA = CA
+        entry.MILDescription=MILDescription
+        entry.updateTime = datetime.datetime.now()
+        entry.save()
+        return response.ResponseData('Update Success')
 
 # Get MIL Items Page
 def get_mil_items_page(request):
@@ -34,6 +181,7 @@ def get_mil_items_page(request):
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
+    type = value.safe_get_in_key(params, 'type')
     if operator.role != 'super_admin' and operator.role != 'admin':
         if lob != None and not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
@@ -51,6 +199,8 @@ def get_mil_items_page(request):
             return response.ResponseError('Params Error') 
     try:
         list = MILItem.objects.all().filter(team=team)
+        if type != None:
+            list = list.filter(type=type)
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:
@@ -59,6 +209,7 @@ def get_mil_items_page(request):
             list = list.filter(productLine=productLine)
         if project != None:
             list = list.filter(project=project)
+        list = list.order_by('-createTime')
         if list is None:
             return response.ResponseData({
                 'total': 0,
@@ -103,7 +254,6 @@ def delete_mil_item(request):
         traceback.print_exc()
         return response.ResponseError('System Error')
 
-
 def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, part, type, auditorId, auditor, dicArr):
     batch = []
     for e in dicArr:
@@ -136,6 +286,15 @@ def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, par
         correctiveAction = value.safe_get_in_key(e, 'correctiveAction')
         department = value.safe_get_in_key(e, 'department')
         vendorDRI = value.safe_get_in_key(e, 'vendorDRI')
+        byAuditCategory = value.safe_get_in_key(e, 'byAuditCategory')
+        programRelated = value.safe_get_in_key(e, 'programRelated')
+        process = None
+        if type == CheckType.Module:
+            process = 'Module'
+        elif type == CheckType.Enclosure:
+            process = 'Enclosure'
+        elif type == CheckType.ORT:
+            process = 'ORT'
         item = MILItem(
             auditItemId=auditItemId,
             team=team,
@@ -151,12 +310,18 @@ def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, par
             day=day,
             quarter=quarter,
             week=week,
+            factory=site,
+            process=process,
             findings=findings,
             keywords=keywords,
             status=status,
             severity=severity,
             line=line,
+            vendor=site,
             station=station,
+            projectPart=project + part,
+            byAuditCategory=byAuditCategory,
+            programRelated=programRelated,
             issueCategory=issueCategory,
             subCategory=subCategory,
             issueBrief=issueBrief,

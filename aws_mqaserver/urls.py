@@ -67,6 +67,7 @@ urlpatterns = [
     path('get_oba_items_for_year', aws_mqaserver.apis.oba_item.get_oba_items_for_year),
 
     path('get_mil_items_page', aws_mqaserver.apis.mil_item.get_mil_items_page),
+    path('update_mil_item', aws_mqaserver.apis.mil_item.update_mil_item),
     path('delete_mil_item', aws_mqaserver.apis.mil_item.delete_mil_item),
 
     path('download_file', aws_mqaserver.apis.file.download_file),
