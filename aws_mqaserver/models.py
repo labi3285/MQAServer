@@ -46,6 +46,19 @@ class Line(models.Model):
     checkListId11 = models.BigIntegerField('checkListId11', null=True)
     class Meta:
         db_table = 't_sa_line'
+
+class LineConfig(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    team = models.CharField(null=False, max_length=99)
+    lob = models.CharField('lob', null=True, max_length=50)
+    site = models.CharField('site', null=True, max_length=50)
+    productLine = models.CharField('productLine', null=True, max_length=50)
+    project = models.CharField('project', null=True, max_length=50)
+    part = models.CharField('part', null=True, max_length=50)
+    domain = models.CharField('domain', null=False, max_length=50)
+    data = models.TextField('data', null=False)
+    class Meta:
+        db_table = 't_sa_line_config'
         
 class CheckList(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
@@ -185,6 +198,8 @@ class AuditItem(models.Model):
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
     uploadTime = models.DateTimeField('uploadTime', null=False)
+    crossDays = models.IntegerField('crossDays', null=True)
+    auditRemark = models.CharField('auditRemark', null=True, max_length=255)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
     auditorId = models.BigIntegerField('auditorId', null=False)
@@ -215,6 +230,8 @@ class KAPPAItem(models.Model):
     FQCKappaSkillMatrixAverageScore = models.FloatField('FQCKappaSkillMatrixAverageScore', null=False)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
+    crossDays = models.IntegerField('crossDays', null=True)
+    auditRemark = models.CharField('auditRemark', null=True, max_length=255)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
@@ -239,6 +256,8 @@ class OBAItem(models.Model):
     findings = models.CharField('findings', null=False, max_length=999)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
+    crossDays = models.IntegerField('crossDays', null=True)
+    auditRemark = models.CharField('auditRemark', null=True, max_length=255)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
@@ -266,7 +285,7 @@ class MILItem(models.Model):
     vendor = models.CharField('vendor', null=False, max_length=50)
     factory = models.CharField('factory', null=False, max_length=50)
     projectPart = models.CharField('projectPart', null=False, max_length=50)
-    process = models.CharField('process', null=False, max_length=50)
+    processCategory = models.CharField('processCategory', null=True, max_length=50)
     line = models.CharField('line', null=True, max_length=50)
     station = models.CharField('station', null=True, max_length=50)
     stage = models.CharField('stage', null=True, max_length=50)

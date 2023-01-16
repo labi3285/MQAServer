@@ -35,6 +35,8 @@ def upload_audit_item(request):
     type = validator.validate_integer(params, 'type')
     beginTime = validator.validate_date(params, 'beginTime')
     endTime = validator.validate_date(params, 'endTime')
+    crossDays = value.safe_get_in_key(params, 'crossDays')
+    auditRemark = value.safe_get_in_key(params, 'auditRemark')
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
     auditor = value.safe_get_in_key(params, 'auditor')
@@ -69,7 +71,7 @@ def upload_audit_item(request):
                 if isDone:
                     passCount += 1
     entry = AuditItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                        beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, skipCount=skipCount, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
+                        beginTime=beginTime, endTime=endTime, crossDays=crossDays, auditRemark=auditRemark, uploadTime=uploadTime, skipCount=skipCount, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
     if findingsArr != None and len(findingsArr) > 0:

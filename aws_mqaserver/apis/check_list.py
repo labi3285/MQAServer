@@ -98,7 +98,7 @@ def get_check_lists_page(request):
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
-    if operator.role != 'admin' and not ids.contains_id(lob, operator.lob):
+    if operator.role != 'super_admin' and operator.role != 'admin' and not ids.contains_id(lob, operator.lob):
         return response.ResponseError('Operation Forbidden')
     if part != None:
         if project == None:

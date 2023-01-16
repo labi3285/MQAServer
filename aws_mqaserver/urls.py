@@ -27,6 +27,7 @@ from aws_mqaserver.views import upload_mil_to_tableau
 
 import aws_mqaserver.apis.user
 import aws_mqaserver.apis.line
+import aws_mqaserver.apis.line_config
 import aws_mqaserver.apis.check_list
 import aws_mqaserver.apis.check_list_item
 import aws_mqaserver.apis.audit_item
@@ -52,6 +53,12 @@ urlpatterns = [
     path('get_level_lines', aws_mqaserver.apis.line.get_level_lines),
     path('delete_line', aws_mqaserver.apis.line.delete_line),
     path('get_lines_tree', aws_mqaserver.apis.line.get_lines_tree),
+
+    path('update_line_config', aws_mqaserver.apis.line_config.update_line_config),
+    path('get_line_configs_page', aws_mqaserver.apis.line_config.get_line_configs_page),
+    path('find_line_config_by_id', aws_mqaserver.apis.line_config.find_line_config_by_id),
+    path('find_line_config', aws_mqaserver.apis.line_config.find_line_config),
+    path('delete_line_config_item', aws_mqaserver.apis.line_config.delete_line_config_item),
 
     path('upload_check_list', aws_mqaserver.apis.check_list.upload_check_list),
     path('find_check_list', aws_mqaserver.apis.check_list.find_check_list),

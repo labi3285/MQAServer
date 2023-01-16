@@ -33,8 +33,10 @@ def upload_kappa_item(request):
     type = validator.validate_integer(params, 'type')
     beginTime = validator.validate_date(params, 'beginTime')
     endTime = validator.validate_date(params, 'endTime')
+    crossDays = value.safe_get_in_key(params, 'crossDays')
+    auditRemark = value.safe_get_in_key(params, 'auditRemark')
     year = beginTime.year
-    highlight = value.safe_get_in_key(params, 'highlight')
+    highlight = value.safe_get_in_key(params, 'highlight', '')
     scoreLossItem = validator.validate_not_empty(params, 'scoreLossItem')
     score = validator.validate_float(params, 'score')
     FQCKappaSkillMatrixScores = validator.validate_not_empty(params, 'FQCKappaSkillMatrixScores')
@@ -44,7 +46,7 @@ def upload_kappa_item(request):
     if auditor == None:
         auditor = operator.name
     entry = KAPPAItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                      beginTime=beginTime, endTime=endTime, uploadTime=uploadTime,
+                      beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, crossDays=crossDays, auditRemark=auditRemark,
                       year=year,
                       highlight=highlight,
                       scoreLossItem=scoreLossItem,
@@ -64,9 +66,23 @@ def get_kappa_items_for_year(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     year = validator.validate_integer(params, 'year')
+    team = validator.get_team(params, operator)
+    lob = validator.validate_not_empty(params, 'lob')
+    site = validator.validate_not_empty(params, 'site')
+    productLine = validator.validate_not_empty(params, 'productLine')
+    project = validator.validate_not_empty(params, 'project')
+    part = validator.validate_not_empty(params, 'part')
     type = validator.validate_integer(params, 'type')
     try:
-        list = KAPPAItem.objects.all().filter(year=year, type=type).order_by("beginTime")
+        list = KAPPAItem.objects.all().filter(
+            year=year,
+            team=team,
+            lob=lob,
+            site=site,
+            productLine=productLine,
+            project=project,
+            part=part,
+            type=type).order_by("beginTime")
         if list is None:
             return response.ResponseData([])
         arr = []

@@ -54,6 +54,7 @@ def update_mil_item(request):
     else:
         quarter = 4
     findings = validator.validate_not_empty(params, 'findings')
+    processCategory = value.safe_get_in_key(params, 'processCategory')
     keywords = value.safe_get_in_key(params, 'keywords')
     status = value.safe_get_in_key(params, 'status')
     severity = value.safe_get_in_key(params, 'severity')
@@ -73,13 +74,6 @@ def update_mil_item(request):
     FA = value.safe_get_in_key(params, 'FA')
     CA = value.safe_get_in_key(params, 'CA')
     MILDescription = value.safe_get_in_key(params, 'MILDescription')
-    process = None
-    if type == CheckType.Module:
-        process = 'Module'
-    elif type == CheckType.Enclosure:
-        process = 'Enclosure'
-    elif type == CheckType.ORT:
-        process = 'ORT'
     if id == None:
         entry = MILItem(
             team=team,
@@ -96,7 +90,7 @@ def update_mil_item(request):
             quarter=quarter,
             week=week,
             factory=site,
-            process=process,
+            processCategory=processCategory,
             findings=findings,
             keywords=keywords,
             status=status,
@@ -141,12 +135,12 @@ def update_mil_item(request):
         # entry.quarter = quarter
         # entry.week = week
         # entry.factory = site
-        # entry.process = process
         # entry.line = line
         # entry.site = site
         # entry.station = station
         # entry.projectPart = project + part
         entry.findings = findings
+        entry.processCategory = processCategory
         entry.keywords = keywords
         entry.status = status
         entry.severity = severity
@@ -209,6 +203,8 @@ def get_mil_items_page(request):
             list = list.filter(productLine=productLine)
         if project != None:
             list = list.filter(project=project)
+        if part != None:
+            list = list.filter(part=part)
         list = list.order_by('-createTime')
         if list is None:
             return response.ResponseData({
@@ -238,7 +234,7 @@ def delete_mil_item(request):
     try:
         entry = MILItem.objects.get(id=id)
     except MILItem.DoesNotExist:
-        return response.ResponseError('Check List Not Exist')
+        return response.ResponseError('MIL Item Not Exist')
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
@@ -274,6 +270,7 @@ def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, par
         else:
             quarter = 4
         findings = validator.validate_not_empty(e, 'findings')
+        processCategory = value.safe_get_in_key(params, 'processCategory')
         keywords = value.safe_get_in_key(e, 'keywords')
         status = value.safe_get_in_key(e, 'status')
         severity = value.safe_get_in_key(e, 'severity')
@@ -288,13 +285,6 @@ def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, par
         vendorDRI = value.safe_get_in_key(e, 'vendorDRI')
         byAuditCategory = value.safe_get_in_key(e, 'byAuditCategory')
         programRelated = value.safe_get_in_key(e, 'programRelated')
-        process = None
-        if type == CheckType.Module:
-            process = 'Module'
-        elif type == CheckType.Enclosure:
-            process = 'Enclosure'
-        elif type == CheckType.ORT:
-            process = 'ORT'
         item = MILItem(
             auditItemId=auditItemId,
             team=team,
@@ -311,7 +301,7 @@ def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, par
             quarter=quarter,
             week=week,
             factory=site,
-            process=process,
+            processCategory=processCategory,
             findings=findings,
             keywords=keywords,
             status=status,
