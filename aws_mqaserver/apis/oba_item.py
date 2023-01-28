@@ -1,3 +1,4 @@
+import sys, os
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import transaction
@@ -8,6 +9,10 @@ from django.conf import settings
 import datetime
 import traceback
 
+import pandas
+from django.core.files import temp as tempfile
+from aws_mqaserver.apis import box
+
 from aws_mqaserver.utils import value
 from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
@@ -15,6 +20,7 @@ from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
 from aws_mqaserver.utils import ids
 
+from aws_mqaserver.models import ObserveType
 from aws_mqaserver.models import OBAItem
 import json
 
@@ -44,6 +50,69 @@ def upload_oba_item(request):
     uploadTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
+
+    # audit_type_name = 'OBA'
+    # if type == ObserveType.Cosmetic:
+    #     audit_type_name = 'OBA Cosmetic'
+    # elif type == ObserveType.Surface:
+    #     audit_type_name = 'OBA Color'
+    # excel_name = lob + '_' + site + '_' + productLine + '_' + project + '_' + part + '_' + audit_type_name + '_' + uploadTime.strftime("%Y%m%d%H%M%S") + '.xlsx'
+    # excel_temp_path = tempfile.gettempdir() + '/' + excel_name
+    # excel_writer = pandas.ExcelWriter(excel_temp_path)
+    # excel_audit_infos = []
+    # scoreLossInfo = json.loads(scoreLossItem)
+    # findings_items = json.loads(findings)
+    # findings_count = len(findings_items)
+    # excel_audit_infos = [
+    #     ['LOB', lob],
+    #     ['Site', site],
+    #     ['Product Line', productLine],
+    #     ['Project', project],
+    #     ['Part', part],
+    #     ['Audit Type', audit_type_name],
+    #     ['Year', year],
+    #     ['Highlight', highlight],
+    #     ['Part Quality Score Loss', value.safe_get_in_key(scoreLossInfo, 'partQuality')],
+    #     ['Preparation Score Loss', value.safe_get_in_key(scoreLossInfo, 'preparation')],
+    #     ['Audit Support Score Loss', value.safe_get_in_key(scoreLossInfo, 'auditSupport')],
+    #     ['Critical Issues Score Loss', value.safe_get_in_key(scoreLossInfo, 'criticalIssues')],
+    #     ['Score', score],
+    #     ['Findings Count', findings_count],
+    #     ['Begin Time', beginTime.strftime("%Y-%m-%d %H:%M:%S")],
+    #     ['End Time', endTime.strftime("%Y-%m-%d %H:%M:%S")],
+    #     ['Audit Remark', auditRemark],
+    #     ['Auditor', auditor],
+    #     ['Upload Time', uploadTime.strftime("%Y-%m-%d %H:%M:%S")],
+    # ]
+    # pandas.DataFrame(excel_audit_infos, columns=['Info Key', 'Info Value']).to_excel(excel_writer, sheet_name='Audit Infos', index=False)
+    # excel_finds_items = []
+    # for item in findings_items:
+    #     date = validator.validate_date(item, 'date')
+    #     month = date.month
+    #     quarter = None
+    #     if month < 4:
+    #         quarter = 'Q1'
+    #     elif month < 7:
+    #         quarter = 'Q2'
+    #     elif month < 10:
+    #         quarter = 'Q3'
+    #     else:
+    #         quarter = 'Q4'
+    #     excel_finds_items.append([
+    #         quarter,
+    #         date.strftime("%Y-%m-%d"),
+    #         value.safe_get_in_key(item, 'severity'),
+    #         value.safe_get_in_key(item, 'findings'),
+    #     ])
+    # pandas.DataFrame(excel_finds_items, columns=['Quarter', 'Audit Date', 'Severity', 'Findings (Descriptions & Baseline)']).to_excel(excel_writer,
+    #                                                                                  sheet_name='Audit Findings',
+    #                                                                                  index=False)
+    # excel_writer.close()
+    # box_folder = '/' + team + '/' + lob + '/' + site + '/' + productLine + '/' + project + '/' + part + '/' + audit_type_name
+    # excel_stream = open(excel_temp_path, 'rb')
+    # box.upload_file(box_folder, excel_name, excel_stream)
+    # os.remove(excel_temp_path)
+
     entry = OBAItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
                       beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, crossDays=crossDays, auditRemark=auditRemark,
                       year=year,

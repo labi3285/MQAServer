@@ -35,6 +35,7 @@ import aws_mqaserver.apis.kappa_item
 import aws_mqaserver.apis.oba_item
 import aws_mqaserver.apis.mil_item
 import aws_mqaserver.apis.file
+import aws_mqaserver.apis.box
 
 urlpatterns = [
 
@@ -78,6 +79,9 @@ urlpatterns = [
     path('delete_mil_item', aws_mqaserver.apis.mil_item.delete_mil_item),
 
     path('download_file', aws_mqaserver.apis.file.download_file),
+
+    path('box_test', aws_mqaserver.apis.box.box_test),
+    path('box_get_authorization', aws_mqaserver.apis.box.box_get_authorization),
 
     path('admin/', admin.site.urls),
     path('downloadCheckList/', downloadCheckList),

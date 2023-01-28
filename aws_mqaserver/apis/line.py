@@ -1,4 +1,4 @@
-
+import sys, os
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import transaction
@@ -321,7 +321,7 @@ def get_lines_tree(request):
                             checkListId3 = value.safe_get_in_key(e, 'checkListId3')
                             checkListId10 = value.safe_get_in_key(e, 'checkListId10')
                             checkListId11 = value.safe_get_in_key(e, 'checkListId11')
-                            if team == 'accessory':
+                            if team == 'Accessory':
                                 if project == 'Glue' and checkListId10 != None:
                                     parts_check_list_uploaded += 1
                                 elif project == "Destructive" and checkListId11 != None:

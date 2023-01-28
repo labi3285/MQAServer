@@ -1,4 +1,4 @@
-
+import sys, os
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import transaction
@@ -8,6 +8,10 @@ import logging
 from django.conf import settings
 import datetime, time
 import traceback
+
+import pandas
+from django.core.files import temp as tempfile
+from aws_mqaserver.apis import box
 
 from aws_mqaserver.utils import value
 from aws_mqaserver.utils import validator
@@ -270,7 +274,7 @@ def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, par
         else:
             quarter = 4
         findings = validator.validate_not_empty(e, 'findings')
-        processCategory = value.safe_get_in_key(params, 'processCategory')
+        processCategory = value.safe_get_in_key(e, 'processCategory')
         keywords = value.safe_get_in_key(e, 'keywords')
         status = value.safe_get_in_key(e, 'status')
         severity = value.safe_get_in_key(e, 'severity')

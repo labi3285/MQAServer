@@ -1,3 +1,4 @@
+import sys, os
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import transaction
@@ -8,6 +9,10 @@ from django.conf import settings
 import datetime
 import traceback
 
+import pandas
+from django.core.files import temp as tempfile
+from aws_mqaserver.apis import box
+
 from aws_mqaserver.utils import value
 from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
@@ -15,6 +20,7 @@ from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
 from aws_mqaserver.utils import ids
 
+from aws_mqaserver.models import ObserveType
 from aws_mqaserver.models import KAPPAItem
 import json
 
@@ -45,6 +51,50 @@ def upload_kappa_item(request):
     uploadTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
+
+    # audit_type_name = 'KAPPA'
+    # if type == ObserveType.Cosmetic:
+    #     audit_type_name = 'KAPPA Cosmetic'
+    # elif type == ObserveType.Surface:
+    #     audit_type_name = 'KAPPA Surface'
+    # excel_name = lob + '_' + site + '_' + productLine + '_' + project + '_' + part + '_' + audit_type_name + '_' + uploadTime.strftime("%Y%m%d%H%M%S") + '.xlsx'
+    # excel_temp_path = tempfile.gettempdir() + '/' + excel_name
+    # excel_writer = pandas.ExcelWriter(excel_temp_path)
+    # excel_audit_infos = []
+    # scoreLossInfo = json.loads(scoreLossItem)
+    # excel_summary = [
+    #     [lob, site, beginTime.strftime("%Y/%m/%d"), productLine, project, auditor, score, highlight],
+    # ]
+    # pandas.DataFrame(excel_summary, columns=['LOB', 'Vendor', 'Audit Year/Month/Date', 'Project', 'Component', 'Auditor', 'Score', 'Highlight']).to_excel(excel_writer, sheet_name='Kappa Summary', index=False)
+    # a = value.safe_get_in_key(scoreLossInfo, 'kappaFailureRate', 0)
+    # b = value.safe_get_in_key(scoreLossInfo, 'sampleCondition', 0)
+    # c = value.safe_get_in_key(scoreLossInfo, 'kappaRecord', 0)
+    # d = value.safe_get_in_key(scoreLossInfo, 'auditSupport', 0)
+    # excel_score_items = [
+    #     [lob, site, beginTime.strftime("%Y/%m/%d"), productLine, project, 'A', 'Breakdown', 'Kappa Failure rate', a, 100 - a],
+    #     [lob, site, beginTime.strftime("%Y/%m/%d"), productLine, project, 'A', 'Breakdown', 'Sample Condition', b, 100 - b],
+    #     [lob, site, beginTime.strftime("%Y/%m/%d"), productLine, project, 'A', 'Breakdown', 'Kappa Record', c, 100 - c],
+    #     [lob, site, beginTime.strftime("%Y/%m/%d"), productLine, project, 'A', 'Breakdown', 'Audit Support', d, 100 - d],
+    # ]
+    # pandas.DataFrame(excel_score_items, columns=['LOB', 'Vendor', 'Audit Year/Month/Date', 'Project', 'Component', 'Item', 'Consmetic Kappa', 'Details', 'Score loss', 'Score']).to_excel(excel_writer, sheet_name='Kappa Score', index=False)
+    # excel_fqc_kappa_skill_matrix_items = []
+    # matrix_items = json.loads(FQCKappaSkillMatrixScores)
+    # for item in matrix_items:
+    #     excel_fqc_kappa_skill_matrix_items.append([
+    #         value.safe_get_in_key(item, 'name'),
+    #         value.safe_get_in_key(item, 'possition'),
+    #         value.safe_get_in_key(item, 'score'),
+    #         value.safe_get_in_key(item, 'judgement'),
+    #     ])
+    # pandas.DataFrame(excel_fqc_kappa_skill_matrix_items, columns=['Name', 'Possition', 'Score', 'Judgement']).to_excel(excel_writer,
+    #                                                                                  sheet_name='FQC Kappa Skill Matrix Scores',
+    #                                                                                  index=False)
+    # excel_writer.close()
+    # box_folder = '/' + team + '/' + lob + '/' + site + '/' + productLine + '/' + project + '/' + part + '/' + audit_type_name
+    # excel_stream = open(excel_temp_path, 'rb')
+    # box.upload_file(box_folder, excel_name, excel_stream)
+    # os.remove(excel_temp_path)
+
     entry = KAPPAItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
                       beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, crossDays=crossDays, auditRemark=auditRemark,
                       year=year,

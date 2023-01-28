@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='user',
             name='team',
-            field=models.CharField(default='mqa', max_length=99),
+            field=models.CharField(default='MQA', max_length=99),
             preserve_default=False,
         ),
     ]

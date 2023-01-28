@@ -17,6 +17,10 @@ class CheckType():
     Glue = 10
     Destructive = 11
 
+class ObserveType():
+    Cosmetic = 1
+    Surface = 2
+
 class User(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
     team = models.CharField(null=False, max_length=99)

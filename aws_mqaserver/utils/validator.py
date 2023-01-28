@@ -31,7 +31,7 @@ def validate_not_empty(params, key):
 def get_team(params, operator):
     team = operator.team
     if operator.role == 'super_admin':
-        return value.safe_get_in_key(params, 'team', 'mqa')
+        return value.safe_get_in_key(params, 'team', 'MQA')
     else:
         return operator.team
 def validate_not_empty_in_keys(params, keys):

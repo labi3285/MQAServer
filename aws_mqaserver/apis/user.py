@@ -1,3 +1,4 @@
+import sys, os
 from django.forms.models import model_to_dict
 from django.core.paginator import Paginator
 
@@ -30,7 +31,7 @@ def login(request):
             return response.ResponseError('Password Incorrect')
         id = -1
         lob = ''
-        team = 'mqa'
+        team = 'MQA'
         role = 'super_admin'
         _token = token.generate_token(id, team, account, lob, role)
         return response.ResponseData({
@@ -77,8 +78,6 @@ def refresh_user(request):
         'user': dict,
         'token': _token
     })
-
-
 
 
 # Add Users

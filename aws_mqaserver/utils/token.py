@@ -46,7 +46,6 @@ def checkout_token_info(token_str):
         traceback.print_exc()
         raise ValidateException('Checkout Token Failed', e)
 
-
 class TokenUser:
     id = None
     team = None
