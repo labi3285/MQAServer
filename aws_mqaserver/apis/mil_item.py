@@ -30,7 +30,6 @@ logger = logging.getLogger('django')
 def update_mil_item(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     id = value.safe_get_in_key(params, 'id')
     type = validator.validate_not_empty(params, 'type')
     lob = validator.validate_not_empty(params, 'lob')
@@ -38,9 +37,9 @@ def update_mil_item(request):
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
-    if operator.role == 'admin' and operator.team != team:
+    if operator.role == 'admin' and operator.team != 'MQA':
         return response.ResponseError('Operation Forbidden')
-    if (operator.role == 'lob_dri' or operator.role == 'lob_auditor') and (operator.team != team or not ids.contains_id(lob, operator.lob)):
+    if (operator.role == 'lob_dri' or operator.role == 'lob_auditor') and (operator.team != 'MQA' or not ids.contains_id(lob, operator.lob)):
         return response.ResponseError('Operation Forbidden')
     sn = 0
     createTime = datetime.datetime.now()
@@ -80,7 +79,6 @@ def update_mil_item(request):
     MILDescription = value.safe_get_in_key(params, 'MILDescription')
     if id == None:
         entry = MILItem(
-            team=team,
             lob=lob,
             site=site,
             productLine=productLine,
@@ -125,7 +123,6 @@ def update_mil_item(request):
         return response.ResponseData('Add Success')
     else:
         entry = MILItem.objects.get(id=id)
-        # entry.team = team
         # entry.lob = lob
         # entry.site = site
         # entry.productLine = productLine
@@ -171,7 +168,6 @@ def update_mil_item(request):
 def get_mil_items_page(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
     lob = value.safe_get_in_key(params, 'lob')
@@ -196,7 +192,7 @@ def get_mil_items_page(request):
         if lob == None:
             return response.ResponseError('Params Error') 
     try:
-        list = MILItem.objects.all().filter(team=team)
+        list = MILItem.objects.all()
         if type != None:
             list = list.filter(type=type)
         if lob != None:
@@ -254,7 +250,7 @@ def delete_mil_item(request):
         traceback.print_exc()
         return response.ResponseError('System Error')
 
-def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, part, type, auditorId, auditor, dicArr):
+def _batch_add_mil_items(auditItemId, lob, site, productLine, project, part, type, auditorId, auditor, dicArr):
     batch = []
     for e in dicArr:
         sn = validator.validate_integer(e, 'sn')
@@ -291,7 +287,6 @@ def _batch_add_mil_items(auditItemId, team, lob, site, productLine, project, par
         programRelated = value.safe_get_in_key(e, 'programRelated')
         item = MILItem(
             auditItemId=auditItemId,
-            team=team,
             lob=lob,
             site=site,
             productLine=productLine,

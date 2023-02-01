@@ -1,0 +1,22 @@
+[
+    {
+        "SN": 1,
+        "Station": "SP2BG",
+        "Process": "BG Plasma",
+        "Product line": "D37",
+        "Project": "BGA",
+        "Check Item": "Speed 50±5mm/s",
+        "USL": 55,
+        "LSL": 45
+    },
+    {
+        "SN": 2,
+        "Station": "SP2BG",
+        "Process": "ASF",
+        "Product line": "D37",
+        "Project": "BGA",
+        "Check Item": "Roller speed 200mm/s",
+        "USL": 200,
+        "LSL": 200
+    }
+]

@@ -3,19 +3,16 @@ from django.db import models
 # import uuid
 
 class AuditType():
-    Module = 1
-    Enclosure = 2
-    AudioHome = 3
+    Module = '1'
+    Enclosure = '2'
+    AudioHome = '3'
 
 class CheckType():
-    Module = 1
-    Enclosure = 2
-    ORT = 3
+    Module = 'Module'
+    Enclosure = 'Enclosure'
+    ORT = 'ORT'
     # KAPPA = 4
     # OBA = 5
-
-    Glue = 10
-    Destructive = 11
 
 class ObserveType():
     Cosmetic = 1
@@ -27,7 +24,7 @@ class User(models.Model):
     icon = models.CharField(null=True, max_length=255)
     account = models.CharField(unique=True, max_length=50)
     password = models.CharField(max_length=32)
-    lob = models.CharField(null=True, max_length=50)
+    lob = models.CharField(null=True, max_length=999)
     role = models.CharField(max_length=50)
     status = models.SmallIntegerField(default=1)
     createTime = models.DateTimeField(null=True)
@@ -36,24 +33,20 @@ class User(models.Model):
     
 class Line(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=True, max_length=50)
     productLine = models.CharField('productLine', null=True, max_length=50)
     project = models.CharField('project', null=True, max_length=50)
     part = models.CharField('part', null=True, max_length=50)    
-    auditType = models.SmallIntegerField('auditType', null=False)
-    checkListId1 = models.BigIntegerField('checkListId1', null=True)
-    checkListId2 = models.BigIntegerField('checkListId2', null=True)
-    checkListId3 = models.BigIntegerField('checkListId3', null=True)
-    checkListId10 = models.BigIntegerField('checkListId10', null=True)
-    checkListId11 = models.BigIntegerField('checkListId11', null=True)
+    auditType = models.CharField('auditType', null=False, max_length=999)
+    checkListId_Module = models.BigIntegerField('checkListId_Module', null=True)
+    checkListId_Enclosure = models.BigIntegerField('checkListId_Enclosure', null=True)
+    checkListId_ORT = models.BigIntegerField('checkListId_ORT', null=True)
     class Meta:
         db_table = 't_sa_line'
 
 class LineConfig(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=True, max_length=50)
     site = models.CharField('site', null=True, max_length=50)
     productLine = models.CharField('productLine', null=True, max_length=50)
@@ -66,14 +59,12 @@ class LineConfig(models.Model):
         
 class CheckList(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
     project = models.CharField('project', null=False, max_length=50)
     part = models.CharField('part', null=False, max_length=50)
-    type = models.SmallIntegerField('type', null=False)
-    rawJson = models.TextField('rawJson', null=False)
+    type = models.CharField('type', null=False, max_length=50)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
     updaterId = models.BigIntegerField('updaterId', null=True)
@@ -83,7 +74,6 @@ class CheckList(models.Model):
         
 class CheckListItemModule(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     checkListId = models.BigIntegerField(null=False)
     sn = models.IntegerField('sn', null=False)
     mainProcess = models.CharField('mainProcess', null=False, max_length=255)
@@ -114,7 +104,6 @@ class CheckListItemModule(models.Model):
         
 class CheckListItemEnclosure(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     checkListId = models.BigIntegerField(null=False)
     sn = models.IntegerField('sn', null=False)
     area = models.CharField('area', null=True, max_length=255)
@@ -122,7 +111,7 @@ class CheckListItemEnclosure(models.Model):
     subProcess = models.CharField('subProcess', null=False, max_length=255)
     checkItems = models.TextField('checkItems', null=False)
     samplingSize = models.CharField('samplingSize', null=False, max_length=999)
-    lookingFor = models.CharField('lookingFor', null=False, max_length=999)
+    lookingFor = models.CharField('lookingFor', null=False, max_length=4999)
     recordsFindings = models.CharField('recordsFindings', null=False, max_length=999)
     result = models.CharField('result', null=False, max_length=99)
     auditSampleSize = models.CharField('auditSampleSize', null=False, max_length=255)
@@ -134,7 +123,6 @@ class CheckListItemEnclosure(models.Model):
         
 class CheckListItemORT(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     checkListId = models.BigIntegerField(null=False)
     sn = models.IntegerField('sn', null=False)
     project = models.CharField('project', null=False, max_length=255)
@@ -157,53 +145,21 @@ class CheckListItemORT(models.Model):
     class Meta:
         db_table = 't_sa_check_list_item_ort'
 
-class CheckListItemGlue(models.Model):
-    id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
-    checkListId = models.BigIntegerField(null=False)
-    sn = models.IntegerField('sn', null=False)
-    theClass = models.CharField('theClass', null=False, max_length=99)
-    lineShift = models.CharField('lineShift', null=False, max_length=99)
-    site = models.CharField('site', null=False, max_length=99)
-    projects = models.CharField('projects', null=False, max_length=99)
-    item = models.CharField('item', null=False, max_length=255)
-    unit = models.CharField('unit', null=False, max_length=255)
-    LSL = models.CharField('LSL', null=False, max_length=99)
-    USL = models.CharField('USL', null=False, max_length=99)
-    class Meta:
-        db_table = 't_sa_check_list_item_glue'
-class CheckListItemDestructive(models.Model):
-    id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
-    checkListId = models.BigIntegerField(null=False)
-    sn = models.IntegerField('sn', null=False)
-    theClass = models.CharField('theClass', null=False, max_length=99)
-    lineShift = models.CharField('lineShift', null=False, max_length=99)
-    site = models.CharField('site', null=False, max_length=99)
-    projects = models.CharField('projects', null=False, max_length=99)
-    item = models.CharField('item', null=False, max_length=255)
-    unit = models.CharField('unit', null=False, max_length=255)
-    LSL = models.CharField('LSL', null=False, max_length=99)
-    class Meta:
-        db_table = 't_sa_check_list_item_destructive'
 
-# One AuditRoughItem is for one Audit,
+# One AuditItem stand for one Audit,
 # This is a rough model with all audit items and findings packed in json
 class AuditItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
     project = models.CharField('project', null=False, max_length=50)
     part = models.CharField('part', null=False, max_length=50)
-    type = models.SmallIntegerField('type', null=False)
+    type = models.CharField('type', null=False, max_length=50)
     rawJson = models.TextField('rawJson', null=False)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
     uploadTime = models.DateTimeField('uploadTime', null=False)
-    crossDays = models.IntegerField('crossDays', null=True)
-    auditRemark = models.CharField('auditRemark', null=True, max_length=255)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
     auditorId = models.BigIntegerField('auditorId', null=False)
@@ -219,13 +175,12 @@ class AuditItem(models.Model):
 
 class KAPPAItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
     project = models.CharField('project', null=False, max_length=50)
     part = models.CharField('part', null=False, max_length=50)
-    type = models.SmallIntegerField('type', null=False)
+    type = models.CharField('type', null=False, max_length=50)
     year = models.SmallIntegerField('year', null=False)
     highlight = models.CharField('highlight', null=False, max_length=255)
     scoreLossItem = models.CharField('scoreLossItem', null=False, max_length=999)
@@ -234,8 +189,6 @@ class KAPPAItem(models.Model):
     FQCKappaSkillMatrixAverageScore = models.FloatField('FQCKappaSkillMatrixAverageScore', null=False)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
-    crossDays = models.IntegerField('crossDays', null=True)
-    auditRemark = models.CharField('auditRemark', null=True, max_length=255)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
@@ -246,13 +199,12 @@ class KAPPAItem(models.Model):
 
 class OBAItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
     project = models.CharField('project', null=False, max_length=50)
     part = models.CharField('part', null=False, max_length=50)
-    type = models.SmallIntegerField('type', null=False)
+    type = models.CharField('type', null=False, max_length=50)
     year = models.SmallIntegerField('year', null=False)
     highlight = models.CharField('highlight', null=False, max_length=255)
     scoreLossItem = models.CharField('scoreLossItem', null=False, max_length=999)
@@ -260,8 +212,6 @@ class OBAItem(models.Model):
     findings = models.CharField('findings', null=False, max_length=999)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
-    crossDays = models.IntegerField('crossDays', null=True)
-    auditRemark = models.CharField('auditRemark', null=True, max_length=255)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
@@ -272,14 +222,13 @@ class OBAItem(models.Model):
 
 class MILItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    team = models.CharField(null=False, max_length=99)
     auditItemId = models.BigIntegerField('auditItemId', null=True)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
     project = models.CharField('project', null=False, max_length=50)
     part = models.CharField('part', null=False, max_length=50)
-    type = models.SmallIntegerField('type', null=False)
+    type = models.CharField('type', null=False, max_length=50)
     sn = models.IntegerField('sn', null=True)
     year = models.SmallIntegerField('year', null=False)
     month = models.SmallIntegerField('month', null=False)
@@ -408,3 +357,8 @@ class uploadImgandVideo(models.Model):
     fullpath = models.CharField('完整路径', max_length=150)
     file_path = models.FileField(upload_to=file_upload_to)
     createDate = models.DateTimeField('创建时间', auto_now_add=True)
+
+from aws_mqaserver.team_MDE.models import *
+from aws_mqaserver.team_Accessory.models import *
+from aws_mqaserver.team_Display.models import *
+from aws_mqaserver.team_SIP.models import *

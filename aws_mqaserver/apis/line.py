@@ -28,8 +28,7 @@ logger = logging.getLogger('django')
 def add_line(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
-    auditType = validator.validate_integer(params, 'auditType')
+    auditType = validator.validate_not_empty(params, 'auditType')
     lob = validator.validate_not_empty(params, 'lob')
     site = value.safe_get_in_key(params, 'site')
     productLine = value.safe_get_in_key(params, 'productLine')
@@ -50,7 +49,7 @@ def add_line(request):
             return response.ResponseError('Operation Forbidden')
     # check duplicate name
     try:
-        Line.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
+        Line.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
         return response.ResponseError('Name Duplicate')
     except Line.DoesNotExist:
         pass
@@ -63,7 +62,7 @@ def add_line(request):
         user.lob = user.lob + lob + '/'
         user.save()
     # add line
-    line = Line(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
+    line = Line(lob=lob, site=site, productLine=productLine, project=project, part=part, auditType=auditType)
     line.save()
     return response.ResponseData('Add Success')
 
@@ -115,7 +114,6 @@ def delete_line(request):
 def get_lines_page(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
     lob = value.safe_get_in_key(params, 'lob')
@@ -132,7 +130,7 @@ def get_lines_page(request):
         if lob == None:
             return response.ResponseError('Params Error') 
     try:
-        list = Line.objects.all().filter(team=team)
+        list = Line.objects.all()
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:
@@ -164,7 +162,6 @@ def get_lines_page(request):
 def get_level_lines(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     lob = value.safe_get_in_key(params, 'lob')
     site = value.safe_get_in_key(params, 'site')
     productLine = value.safe_get_in_key(params, 'productLine')
@@ -178,14 +175,12 @@ def get_level_lines(request):
     if site != None:
         if lob == None:
             return response.ResponseError('Params Error')
-
-    logger.info(team)
     try:
         list = None
         if lob == None:
-            list = Line.objects.filter(team=team, lob__isnull=False, site__isnull=True)
+            list = Line.objects.filter(lob__isnull=False, site__isnull=True)
         else:
-            list = Line.objects.filter(team=team, lob=lob)
+            list = Line.objects.filter(lob=lob)
             if site == None:
                 list = list.filter(site__isnull=False, productLine__isnull=True)
             else:
@@ -213,9 +208,8 @@ def get_level_lines(request):
 def get_lines_tree(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     try:
-        list = Line.objects.all().filter(team=team)
+        list = Line.objects.all()
         arr = []
         for e in list:
             arr.append(model_to_dict(e))
@@ -316,37 +310,27 @@ def get_lines_tree(request):
                         parts_check_list_total = 0
                         for e in lobs_dic.get(lob).get(site).get(productLine).get(project):
                             auditType = e.get('auditType')
-                            checkListId1 = value.safe_get_in_key(e, 'checkListId1')
-                            checkListId2 = value.safe_get_in_key(e, 'checkListId2')
-                            checkListId3 = value.safe_get_in_key(e, 'checkListId3')
-                            checkListId10 = value.safe_get_in_key(e, 'checkListId10')
-                            checkListId11 = value.safe_get_in_key(e, 'checkListId11')
-                            if team == 'Accessory':
-                                if project == 'Glue' and checkListId10 != None:
+                            checkListId_Module = value.safe_get_in_key(e, 'checkListId_Module')
+                            checkListId_Enclosure = value.safe_get_in_key(e, 'checkListId_Enclosure')
+                            checkListId_ORT = value.safe_get_in_key(e, 'checkListId_ORT')
+                            if auditType == AuditType.Module:
+                                if checkListId_Module != None:
                                     parts_check_list_uploaded += 1
-                                elif project == "Destructive" and checkListId11 != None:
+                                if checkListId_ORT != None:
+                                    parts_check_list_uploaded += 1
+                                parts_check_list_total += 2
+                            elif auditType == AuditType.Enclosure:
+                                if checkListId_Enclosure != None:
                                     parts_check_list_uploaded += 1
                                 parts_check_list_total += 1
-                            else:
-                                if auditType == AuditType.Module:
-                                    if checkListId1 != None:
-                                        parts_check_list_uploaded += 1
-                                    if checkListId3 != None:
-                                        parts_check_list_uploaded += 1
-                                    parts_check_list_total += 2
-                                elif auditType == AuditType.Enclosure:
-                                    if checkListId2 != None:
-                                        parts_check_list_uploaded += 1
-                                    parts_check_list_total += 1
-                                elif auditType == AuditType.AudioHome:
-                                    if checkListId2 != None:
-                                        parts_check_list_uploaded += 1
-                                    if checkListId3 != None:
-                                        parts_check_list_uploaded += 1
-                                    parts_check_list_total += 2
+                            elif auditType == AuditType.AudioHome:
+                                if checkListId_Enclosure != None:
+                                    parts_check_list_uploaded += 1
+                                if checkListId_ORT != None:
+                                    parts_check_list_uploaded += 1
+                                parts_check_list_total += 2
                             parts.append({
                                 'id': e.get('id'),
-                                'team': e.get('team'),
                                 'lob': lob,
                                 'site': site,
                                 'productLine': productLine,
@@ -355,16 +339,13 @@ def get_lines_tree(request):
                                 'name': e.get('part'),
                                 'auditType': auditType,
                                 'type': 'part',
-                                'checkListId1': checkListId1,
-                                'checkListId2': checkListId2,
-                                'checkListId3': checkListId3,
-                                'checkListId10': checkListId10,
-                                'checkListId11': checkListId11,
+                                'checkListId_Module': checkListId_Module,
+                                'checkListId_Enclosure': checkListId_Enclosure,
+                                'checkListId_ORT': checkListId_ORT,
                             })
                         project_info = info_cache.get(lob + '/' + site + '/' + productLine + '/' + project)
                         projects.append({
                             'id': project_info.get('id'),
-                            'team': project_info.get('team'),
                             'auditType': project_info.get('auditType'),
                             'lob': lob,
                             'site': site,
@@ -381,7 +362,6 @@ def get_lines_tree(request):
                     productLine_info = info_cache.get(lob + '/' + site + '/' + productLine)
                     productLines.append({
                         'id': productLine_info.get('id'),
-                        'team': productLine_info.get('team'),
                         'auditType': productLine_info.get('auditType'),
                         'lob': lob,
                         'site': site,
@@ -397,7 +377,6 @@ def get_lines_tree(request):
                 site_info = info_cache.get(lob + '/' + site)
                 sites.append({
                     'id': site_info.get('id'),
-                    'team': site_info.get('team'),
                     'auditType': site_info.get('auditType'),
                     'lob': lob,
                     'site': site,
@@ -412,7 +391,6 @@ def get_lines_tree(request):
             lob_info = info_cache.get(lob)
             lobs.append({
                 'id': lob_info.get('id'),
-                'team': lob_info.get('team'),
                 'auditType': lob_info.get('auditType'),
                 'lob': lob,
                 'name': lob,

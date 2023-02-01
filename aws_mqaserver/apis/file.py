@@ -9,13 +9,15 @@ from aws_mqaserver.utils import token
 from aws_mqaserver.utils import ids
 
 def download_file(request):
-    fileName = request.GET.get("fileName")
-    if fileName == None or fileName == '':
+    filePath = request.GET.get("filePath")
+    if filePath == None or filePath == '':
         return response.ResponseError('fileName Not Exist')
     path = settings.BASE_DIR
-    path = os.path.join(path, 'aws_mqaserver/files/' + fileName)
+    path = os.path.join(path, 'aws_mqaserver/' + filePath)
+    fileName = os.path.basename(filePath)
     file = open(os.path.abspath(path), 'rb')
     response = FileResponse(file)
     response['Content-Type'] = 'application/octet-stream'
     response['Content-Disposition'] = 'attachment;filename="' + fileName + '"'
+    print(fileName)
     return response

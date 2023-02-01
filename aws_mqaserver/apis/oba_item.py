@@ -30,17 +30,14 @@ logger = logging.getLogger('django')
 def upload_oba_item(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
     project = validator.validate_not_empty(params, 'project')
     part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_integer(params, 'type')
+    type = validator.validate_not_empty(params, 'type')
     beginTime = validator.validate_date(params, 'beginTime')
     endTime = validator.validate_date(params, 'endTime')
-    crossDays = value.safe_get_in_key(params, 'crossDays')
-    auditRemark = value.safe_get_in_key(params, 'auditRemark')
     year = beginTime.year
     highlight = value.safe_get_in_key(params, 'highlight', '')
     scoreLossItem = validator.validate_not_empty(params, 'scoreLossItem')
@@ -113,8 +110,8 @@ def upload_oba_item(request):
     # box.upload_file(box_folder, excel_name, excel_stream)
     # os.remove(excel_temp_path)
 
-    entry = OBAItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                      beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, crossDays=crossDays, auditRemark=auditRemark,
+    entry = OBAItem(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
+                      beginTime=beginTime, endTime=endTime, uploadTime=uploadTime,
                       year=year,
                       highlight=highlight,
                       scoreLossItem=scoreLossItem,
@@ -132,17 +129,15 @@ def get_oba_items_for_year(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     year = validator.validate_integer(params, 'year')
-    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
     project = validator.validate_not_empty(params, 'project')
     part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_integer(params, 'type')
+    type = validator.validate_not_empty(params, 'type')
     try:
         list = OBAItem.objects.all().filter(
             year=year,
-            team=team,
             lob=lob,
             site=site,
             productLine=productLine,

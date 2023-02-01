@@ -19,22 +19,6 @@ ROOT_ID = '140229589156'
 global_client = None
 global_folder_id_dict = {}
 
-def _check_or_setup_box():
-    global global_client
-    if global_client != None:
-        return
-    oauth = OAuth2(
-        client_id=CLIENT_ID,
-        client_secret=CLIENT_SECRET,
-        access_token=DEV_TOKEN,
-        # access_token=access_token,
-        # refresh_token=refresh_token,
-        store_tokens=_store_tokens,
-    )
-    global_client = Client(oauth)
-    current_user = global_client.user(user_id='me').get()
-    print('[box] setup, user:', current_user.name)
-
 def box_get_authorization(request):
     logger.info('>>>>>>>>>>>')
     logger.info(request)
@@ -52,6 +36,22 @@ def _store_tokens(access_token, refresh_token):
     keyring.set_password('Box_Auth', BOX_ACCOUNT, access_token)
     keyring.set_password('Box_Refresh', BOX_ACCOUNT, refresh_token)
     print('store')
+
+def _check_or_setup_box():
+    global global_client
+    if global_client != None:
+        return
+    oauth = OAuth2(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        access_token=DEV_TOKEN,
+        # access_token=access_token,
+        # refresh_token=refresh_token,
+        store_tokens=_store_tokens,
+    )
+    global_client = Client(oauth)
+    current_user = global_client.user(user_id='me').get()
+    print('[box] setup, user:', current_user.name)
 
 def _create_folder(parent_id, folder_name):
     global global_client

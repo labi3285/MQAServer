@@ -25,7 +25,6 @@ def update_line_config(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     id = value.safe_get_in_key(params, 'id')
-    team = validator.get_team(params, operator)
     lob = value.safe_get_in_key(params, 'lob')
     site = value.safe_get_in_key(params, 'site')
     productLine = value.safe_get_in_key(params, 'productLine')
@@ -50,12 +49,12 @@ def update_line_config(request):
             return response.ResponseError('Operation Forbidden')
     if id == None:
         try:
-            entry = LineConfig.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, domain=domain)
+            entry = LineConfig.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, domain=domain)
             entry.data = data
             entry.save()
             return response.ResponseData('Add Success')
         except LineConfig.DoesNotExist:
-            entry = LineConfig(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part,
+            entry = LineConfig(lob=lob, site=site, productLine=productLine, project=project, part=part,
                                domain=domain,
                                data=data)
             entry.save()
@@ -79,7 +78,6 @@ def find_line_config_by_id(request):
 def find_line_config(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     domain = validator.validate_not_empty(params, 'domain')
     lob = validator.validate_not_empty(params, 'lob')
     site = value.safe_get_in_key(params, 'site')
@@ -94,27 +92,27 @@ def find_line_config(request):
         return response.ResponseError('Params Error')
     entry = None
     try:
-        entry = LineConfig.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, domain=domain)
+        entry = LineConfig.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, domain=domain)
         return response.ResponseData(model_to_dict(entry))
     except LineConfig.DoesNotExist:
         try:
-            entry = LineConfig.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=None, domain=domain)
+            entry = LineConfig.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=None, domain=domain)
             return response.ResponseData(model_to_dict(entry))
         except LineConfig.DoesNotExist:
             try:
-                entry = LineConfig.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=None, part=None, domain=domain)
+                entry = LineConfig.objects.get(lob=lob, site=site, productLine=productLine, project=None, part=None, domain=domain)
                 return response.ResponseData(model_to_dict(entry))
             except LineConfig.DoesNotExist:
                 try:
-                    entry = LineConfig.objects.get(team=team, lob=lob, site=site, productLine=None, project=None, part=None, domain=domain)
+                    entry = LineConfig.objects.get(lob=lob, site=site, productLine=None, project=None, part=None, domain=domain)
                     return response.ResponseData(model_to_dict(entry))
                 except LineConfig.DoesNotExist:
                     try:
-                        entry = LineConfig.objects.get(team=team, lob=lob, site=None, productLine=None, project=None, part=None, domain=domain)
+                        entry = LineConfig.objects.get(lob=lob, site=None, productLine=None, project=None, part=None, domain=domain)
                         return response.ResponseData(model_to_dict(entry))
                     except LineConfig.DoesNotExist:
                         try:
-                            entry = LineConfig.objects.get(team=team, lob=None, site=None, productLine=None, project=None, part=None, domain=domain)
+                            entry = LineConfig.objects.get(lob=None, site=None, productLine=None, project=None, part=None, domain=domain)
                             return response.ResponseData(model_to_dict(entry))
                         except LineConfig.DoesNotExist:
                             return response.ResponseData(None)
@@ -166,7 +164,6 @@ def delete_line_config_item(request):
 def get_line_configs_page(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
     lob = value.safe_get_in_key(params, 'lob')
@@ -190,7 +187,7 @@ def get_line_configs_page(request):
         if lob == None:
             return response.ResponseError('Params Error')
     try:
-        list = LineConfig.objects.all().filter(team=team)
+        list = LineConfig.objects.all()
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:

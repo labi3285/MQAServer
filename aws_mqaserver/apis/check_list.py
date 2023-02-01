@@ -30,13 +30,12 @@ logger = logging.getLogger('django')
 def upload_check_list(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
     project = validator.validate_not_empty(params, 'project')
     part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_integer(params, 'type')
+    type = validator.validate_not_empty(params, 'type')
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
     if operator.role != 'super_admin' and operator.role != 'admin':
@@ -44,42 +43,34 @@ def upload_check_list(request):
             return response.ResponseError('Operation Forbidden')
     # add
     try:
-        entry = CheckList.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
+        entry = CheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
         entry.rawJson = rawJson
         entry.updateTime = datetime.datetime.now()
         entry.updaterId = operator.id
         entry.updater = operator.name
         entry.save()
         check_list_item._batch_delete_check_list_items(entry.id, type)
-        check_list_item._batch_add_check_list_items(entry.id, team, type, json.loads(rawJson))
-        line = Line.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part)
+        check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
+        line = Line.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
         if type == CheckType.Module:
-            line.checkListId1=entry.id
+            line.checkListId_Module = entry.id
         elif type == CheckType.Enclosure:
-            line.checkListId2=entry.id
+            line.checkListId_Enclosure = entry.id
         elif type == CheckType.ORT:
-            line.checkListId3=entry.id
-        elif type == CheckType.Glue:
-            line.checkListId10=entry.id
-        elif type == CheckType.Destructive:
-            line.checkListId11=entry.id
+            line.checkListId_ORT = entry.id
         line.save()
         return response.ResponseData('Uploaded')
     except CheckList.DoesNotExist:
-        entry = CheckList(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type, rawJson=rawJson, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
+        entry = CheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
         entry.save()
-        check_list_item._batch_add_check_list_items(entry.id, team, type, json.loads(rawJson))
-        line = Line.objects.get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part)
+        check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
+        line = Line.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
         if type == CheckType.Module:
-            line.checkListId1 = entry.id
+            line.checkListId_Module = entry.id
         elif type == CheckType.Enclosure:
-            line.checkListId2 = entry.id
+            line.checkListId_Enclosure = entry.id
         elif type == CheckType.ORT:
-            line.checkListId3 = entry.id
-        elif type == CheckType.Glue:
-            line.checkListId10=entry.id
-        elif type == CheckType.Destructive:
-            line.checkListId11=entry.id
+            line.checkListId_ORT = entry.id
         line.save()
         return response.ResponseData('Uploaded')
     except Exception as e:
@@ -90,7 +81,6 @@ def upload_check_list(request):
 def get_check_lists_page(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
     lob = value.safe_get_in_key(params, 'lob')
@@ -113,7 +103,7 @@ def get_check_lists_page(request):
         if lob == None:
             return response.ResponseError('Params Error') 
     try:
-        list = CheckList.objects.defer('rawJson').all().filter(team=team)
+        list = CheckList.objects.all()
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:
@@ -131,18 +121,7 @@ def get_check_lists_page(request):
         page = paginator.get_page(pageNum)
         arr = []
         for e in page:
-            arr.append({
-                'id': e.id,
-                'team': e.team,
-                'type': e.type,
-                'lob': e.lob,
-                'site': e.site,
-                'productLine': e.productLine,
-                'project': e.project,
-                'part': e.part,
-                'updateTime': e.updateTime,
-                'createTime': e.createTime,
-            })
+            arr.append(model_to_dict(e))
         return response.ResponseData({
             'total': paginator.count,
             'list': arr
@@ -155,7 +134,6 @@ def get_check_lists_page(request):
 def find_check_list(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
-    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
@@ -163,20 +141,8 @@ def find_check_list(request):
     part = validator.validate_not_empty(params, 'part')
     type = validator.validate_not_empty(params, 'type')
     try:
-        e = CheckList.objects.defer('rawJson').get(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
-        m = {
-            'id': e.id,
-            'team': e.team,
-            'type': e.type,
-            'lob': e.lob,
-            'site': e.site,
-            'productLine': e.productLine,
-            'project': e.project,
-            'part': e.part,
-            'updateTime': e.updateTime,
-            'createTime': e.createTime,
-        }
-        return response.ResponseData(m)
+        entry = CheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
+        return response.ResponseData(model_to_dict(entry))
     except CheckList.DoesNotExist:
         return response.ResponseData(None)
     except Exception:

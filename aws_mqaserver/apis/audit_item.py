@@ -34,17 +34,14 @@ def upload_audit_item(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     logger.info(params)
-    team = validator.get_team(params, operator)
     lob = validator.validate_not_empty(params, 'lob')
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
     project = validator.validate_not_empty(params, 'project')
     part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_integer(params, 'type')
+    type = validator.validate_not_empty(params, 'type')
     beginTime = validator.validate_date(params, 'beginTime')
     endTime = validator.validate_date(params, 'endTime')
-    crossDays = value.safe_get_in_key(params, 'crossDays')
-    auditRemark = value.safe_get_in_key(params, 'auditRemark')
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
     auditor = value.safe_get_in_key(params, 'auditor')
@@ -67,28 +64,19 @@ def upload_audit_item(request):
             isDone = value.safe_get_in_key(e, 'isDone', False)
             if isDone:
                 doneCount += 1
-            if type == CheckType.Module or type == CheckType.Enclosure or type == CheckType.ORT:
-                if value.safe_get_in_key(e, 'isSkip', False):
-                    skipCount += 1
-                findings = value.safe_get_in_key(e, 'findings')
-                if findings != None and len(findings) > 0:
-                    e['findingsCount'] = len(findings)
-                    failCount += 1
-                    for f in findings:
-                        findingCount += 1
-                        all_findings.append(f)
-                else:
-                    e['findingsCount'] = 0
-                    if isDone:
-                        passCount += 1
-            elif type == CheckType.Glue or type == CheckType.Destructive:
-                if value.safe_get_in_key(e, 'failCount', 0) > 0:
-                    failCount += 1
-                else:
-                    if isDone:
-                        passCount += 1
+            if value.safe_get_in_key(e, 'isSkip', False):
+                skipCount += 1
+            findings = value.safe_get_in_key(e, 'findings')
+            if findings != None and len(findings) > 0:
+                e['findingsCount'] = len(findings)
+                failCount += 1
+                for f in findings:
+                    findingCount += 1
+                    all_findings.append(f)
             else:
                 e['findingsCount'] = 0
+                if isDone:
+                    passCount += 1
 
     # audit_type_name = ''
     # if type == CheckType.Module:
@@ -128,32 +116,6 @@ def upload_audit_item(request):
     #         ['End Time', endTime.strftime("%Y-%m-%d %H:%M:%S")],
     #         ['Auditor', auditor],
     #         ['Upload Time', uploadTime.strftime("%Y-%m-%d %H:%M:%S")],
-    #     ]
-    # elif type == CheckType.Glue or type == CheckType.Destructive:
-    #     cross_day_str = None
-    #     if crossDays != None:
-    #         if crossDays == 1:
-    #             cross_day_str = 'TRUE'
-    #         else:
-    #             cross_day_str = 'FALSE'
-    #     excel_audit_infos = [
-    #         ['LOB', lob],
-    #         ['Site', site],
-    #         ['Product Line', productLine],
-    #         ['Project', project],
-    #         ['Part', part],
-    #         ['Audit Type', audit_type_name],
-    #         ['Pass Count', passCount],
-    #         ['Fail Count', failCount],
-    #         ['Done Count', doneCount],
-    #         ['Total Count', totalCount],
-    #         ['Audit Progress', progress],
-    #         ['Begin Time', beginTime.strftime("%Y-%m-%d %H:%M:%S")],
-    #         ['End Time', endTime.strftime("%Y-%m-%d %H:%M:%S")],
-    #         ['Upload Time', uploadTime.strftime("%Y-%m-%d %H:%M:%S")],
-    #         ['Cross Days', cross_day_str],
-    #         ['Audit Remark', auditRemark],
-    #         ['Auditor', auditor],
     #     ]
     # pandas.DataFrame(excel_audit_infos, columns=['Info Key', 'Info Value']).to_excel(excel_writer, sheet_name='Audit Infos', index=False)
     # excel_audit_items = []
@@ -331,12 +293,12 @@ def upload_audit_item(request):
     # box.upload_file(box_folder, excel_name, excel_stream)
     # os.remove(excel_temp_path)
 
-    entry = AuditItem(team=team, lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                        beginTime=beginTime, endTime=endTime, crossDays=crossDays, auditRemark=auditRemark, uploadTime=uploadTime, skipCount=skipCount, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
+    entry = AuditItem(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
+                        beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, skipCount=skipCount, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
     if all_findings != None and len(all_findings) > 0:
-        mil_item._batch_add_mil_items(entry.id, team, lob, site, productLine, project, part, type, operator.id,
+        mil_item._batch_add_mil_items(entry.id, lob, site, productLine, project, part, type, operator.id,
                                       auditor, all_findings)
         return response.ResponseData({
             'id': entry.id
