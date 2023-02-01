@@ -26,7 +26,7 @@ def login(request):
     passoword = validator.validate_not_empty(params, 'password')
 
     # admin
-    if account == 'admin':
+    if account == 'Admin':
         if passoword != settings.ADMIN_PASSWORD:
             return response.ResponseError('Password Incorrect')
         id = -1
@@ -38,7 +38,7 @@ def login(request):
             'user': {
                 'id': id,
                 'team': team,
-                'account': 'admin',
+                'account': 'Admin',
                 'lob': ids.get_ids(lob),
                 'role': role
             },
