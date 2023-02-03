@@ -85,6 +85,43 @@ class SIPAuditItem(models.Model):
     class Meta:
         db_table = 't_sip_audit_item'
 
+class SIPAuditItemCheckItemEnclosure(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    checkListId = models.BigIntegerField(null=True)
+    auditItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+
+    checkItem_sn = models.IntegerField('checkItem_sn', null=False)
+    checkItem_area = models.CharField('checkItem_area', null=True, max_length=255)
+    checkItem_mainProcess = models.CharField('checkItem_mainProcess', null=False, max_length=255)
+    checkItem_subProcess = models.CharField('checkItem_subProcess', null=False, max_length=255)
+    checkItem_checkItems = models.TextField('checkItem_checkItems', null=False)
+    checkItem_samplingSize = models.CharField('checkItem_samplingSize', null=False, max_length=999)
+    checkItem_lookingFor = models.CharField('checkItem_lookingFor', null=False, max_length=4999)
+    checkItem_recordsFindings = models.CharField('checkItem_recordsFindings', null=False, max_length=999)
+    checkItem_auditSampleSize = models.CharField('checkItem_auditSampleSize', null=False, max_length=255)
+    checkItem_disScore = models.IntegerField('checkItem_disScore', null=True)
+    checkItem_disTimes = models.IntegerField('checkItem_disTimes', null=True)
+    checkItem_skip = models.BooleanField('checkItem_skip', null=True)
+
+    records = models.CharField('records', null=True, max_length=999)
+    result = models.CharField('result', null=True, max_length=255)
+    findings = models.TextField('findings', null=True)
+    hasFindings = models.BooleanField('hasFindings', null=False)
+    isSkip = models.BooleanField('isSkip', null=False)
+    isDone = models.BooleanField('isDone', null=False)
+    status = models.CharField('status', null=True, max_length=50)
+    uploadTime = models.DateTimeField('uploadTime', null=False)
+    createTime = models.DateTimeField(null=True)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sip_audit_item_check_item_enclosure'
+
 class SIPMILItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
     auditItemId = models.BigIntegerField('auditItemId', null=True)

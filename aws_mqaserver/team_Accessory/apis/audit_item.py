@@ -23,6 +23,8 @@ from aws_mqaserver.utils import ids
 from aws_mqaserver.team_Accessory.models import AccessoryCheckType
 from aws_mqaserver.team_Accessory.models import AccessoryAuditItem
 
+from aws_mqaserver.team_Accessory.apis import audit_item_check_item
+
 import json
 
 logger = logging.getLogger('django')
@@ -54,11 +56,16 @@ def upload_audit_item(request):
     doneCount = 0
     totalCount = 0
     audit_items = []
+    audit_items_points = []
     if rawJson != None and rawJson != '':
         audit_items = json.loads(rawJson)
         for e in audit_items:
             totalCount += 1
             isDone = value.safe_get_in_key(e, 'isDone', False)
+            points = value.safe_get_in_key(e, 'points', [])
+            for p in points:
+                p['checkItem'] = e['checkItem']
+                audit_items_points.append(p)
             if isDone:
                 doneCount += 1
             if type == AccessoryCheckType.Glue or type == AccessoryCheckType.Destructive:
@@ -67,8 +74,6 @@ def upload_audit_item(request):
                 else:
                     if isDone:
                         passCount += 1
-            else:
-                e['findingsCount'] = 0
 
     # audit_type_name = ''
     # if type == AccessoryCheckType.Glue:
@@ -166,6 +171,10 @@ def upload_audit_item(request):
                         beginTime=beginTime, endTime=endTime, crossDays=crossDays, auditRemark=auditRemark, uploadTime=uploadTime, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, rawJson=rawJson, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
+    if audit_items != None and len(audit_items) > 0:
+        audit_item_check_item._batch_add_check_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, audit_items)
+    if audit_items_points != None and len(audit_items_points) > 0:
+        audit_item_check_item._batch_add_check_items_points(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, audit_items_points)
     return response.ResponseData({
         'id': entry.id
     })

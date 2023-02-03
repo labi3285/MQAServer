@@ -15,8 +15,8 @@ class CheckType():
     # OBA = 5
 
 class ObserveType():
-    Cosmetic = 1
-    Surface = 2
+    Cosmetic = 'Cosmetic'
+    Surface = 'Surface'
 
 class User(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
@@ -173,6 +173,130 @@ class AuditItem(models.Model):
     class Meta:
         db_table = 't_sa_audit_item'
 
+class AuditItemCheckItemModule(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    checkListId = models.BigIntegerField(null=True)
+    auditItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    checkItem_sn = models.IntegerField('checkItem_sn', null=False)
+    checkItem_mainProcess = models.CharField('checkItem_mainProcess', null=False, max_length=255)
+    checkItem_subProcess = models.CharField('checkItem_subProcess', null=False, max_length=255)
+    checkItem_ifCtq = models.BooleanField('checkItem_ifCtq', null=False)
+    checkItem_measurementEquipment = models.CharField('checkItem_measurementEquipment', null=False, max_length=255)
+    checkItem_LSL = models.CharField('checkItem_LSL', null=False, max_length=255)
+    checkItem_USL = models.CharField('checkItem_USL', null=False, max_length=255)
+    checkItem_LCL = models.CharField('checkItem_LCL', null=False, max_length=255)
+    checkItem_UCL = models.CharField('checkItem_UCL', null=False, max_length=255)
+    checkItem_checkItem = models.CharField('checkItem_checkItem', null=False, max_length=999)
+    checkItem_sampleUnit = models.CharField('checkItem_sampleUnit', null=False, max_length=255)
+    checkItem_sampleSize = models.CharField('checkItem_sampleSize', null=False, max_length=255)
+    checkItem_frenquencyBasis = models.CharField('checkItem_frenquencyBasis', null=False, max_length=255)
+    checkItem_controlType = models.CharField('checkItem_controlType', null=False, max_length=255)
+    checkItem_controlMethod = models.CharField('checkItem_controlMethod', null=False, max_length=255)
+    checkItem_controlCriteria = models.CharField('checkItem_controlCriteria', null=False, max_length=999)
+    checkItem_responsePlan = models.CharField('checkItem_responsePlan', null=False, max_length=999)
+    checkItem_sopNo = models.CharField('checkItem_sopNo', null=False, max_length=99)
+    checkItem_auditSampleSize = models.CharField('checkItem_auditSampleSize', null=False, max_length=255)
+    checkItem_disScore = models.IntegerField('checkItem_disScore', null=True)
+    checkItem_disTimes = models.IntegerField('checkItem_disTimes', null=True)
+    checkItem_skip = models.BooleanField('checkItem_skip', null=True)
+    peopleTrain = models.CharField('peopleTrain', null=True, max_length=255)
+    machineMaintenance = models.CharField('machineMaintenance', null=True, max_length=255)
+    onsiteVerify = models.CharField('onsiteVerify', null=True, max_length=255)
+    materialHandling = models.CharField('materialHandling', null=True, max_length=255)
+    environmentSetting = models.CharField('environmentSetting', null=True, max_length=255)
+    workshopLineMachine = models.CharField('workshopLineMachine', null=True, max_length=255)
+    result = models.CharField('result', null=True, max_length=255)
+    findings = models.TextField('findings', null=True)
+    hasFindings = models.BooleanField('hasFindings', null=False)
+    isSkip = models.BooleanField('isSkip', null=False)
+    isDone = models.BooleanField('isDone', null=False)
+    status = models.CharField('status', null=True, max_length=50)
+    uploadTime = models.DateTimeField('uploadTime', null=False)
+    createTime = models.DateTimeField(null=True)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sa_audit_item_check_item_module'
+
+class AuditItemCheckItemEnclosure(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    checkListId = models.BigIntegerField(null=True)
+    auditItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    checkItem_sn = models.IntegerField('checkItem_sn', null=False)
+    checkItem_area = models.CharField('checkItem_area', null=True, max_length=255)
+    checkItem_mainProcess = models.CharField('checkItem_mainProcess', null=False, max_length=255)
+    checkItem_subProcess = models.CharField('checkItem_subProcess', null=False, max_length=255)
+    checkItem_checkItems = models.TextField('checkItem_checkItems', null=False)
+    checkItem_samplingSize = models.CharField('checkItem_samplingSize', null=False, max_length=999)
+    checkItem_lookingFor = models.CharField('checkItem_lookingFor', null=False, max_length=4999)
+    checkItem_recordsFindings = models.CharField('checkItem_recordsFindings', null=False, max_length=999)
+    checkItem_auditSampleSize = models.CharField('checkItem_auditSampleSize', null=False, max_length=255)
+    checkItem_disScore = models.IntegerField('checkItem_disScore', null=True)
+    checkItem_disTimes = models.IntegerField('checkItem_disTimes', null=True)
+    checkItem_skip = models.BooleanField('checkItem_skip', null=True)
+    records = models.CharField('records', null=True, max_length=999)
+    result = models.CharField('result', null=True, max_length=255)
+    findings = models.TextField('findings', null=True)
+    hasFindings = models.BooleanField('hasFindings', null=False)
+    isSkip = models.BooleanField('isSkip', null=False)
+    isDone = models.BooleanField('isDone', null=False)
+    status = models.CharField('status', null=True, max_length=50)
+    uploadTime = models.DateTimeField('uploadTime', null=False)
+    createTime = models.DateTimeField(null=True)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sa_audit_item_check_item_enclosure'
+
+class AuditItemCheckItemORT(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    checkListId = models.BigIntegerField(null=True)
+    auditItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    checkItem_sn = models.IntegerField('checkItem_sn', null=False)
+    checkItem_project = models.CharField('checkItem_project', null=False, max_length=255)
+    checkItem_testItem = models.CharField('checkItem_testItem', null=False, max_length=999)
+    checkItem_testConditionParameter = models.CharField('checkItem_testConditionParameter', null=False, max_length=999)
+    checkItem_equipment = models.CharField('checkItem_equipment', null=False, max_length=255)
+    checkItem_fixtureYN = models.CharField('checkItem_fixtureYN', null=False, max_length=99)
+    checkItem_sampleOrientation = models.CharField('checkItem_sampleOrientation', null=False, max_length=255)
+    checkItem_recoveryTime = models.CharField('checkItem_recoveryTime', null=False, max_length=99)
+    checkItem_sampleSize = models.CharField('checkItem_sampleSize', null=False, max_length=99)
+    checkItem_samplingFreq = models.CharField('checkItem_samplingFreq', null=False, max_length=99)
+    checkItem_duration = models.CharField('checkItem_duration', null=False, max_length=99)
+    checkItem_readPoint = models.CharField('checkItem_readPoint', null=False, max_length=99)
+    checkItem_passFailCriteria = models.CharField('checkItem_passFailCriteria', null=False, max_length=999)
+    checkItem_OCAP = models.CharField('checkItem_OCAP', null=False, max_length=999)
+    checkItem_disScore = models.IntegerField('checkItem_disScore', null=True)
+    checkItem_disTimes = models.IntegerField('checkItem_disTimes', null=True)
+    checkItem_skip = models.BooleanField('checkItem_skip', null=True)
+    result = models.CharField('result', null=True, max_length=255)
+    findings = models.TextField('findings', null=True)
+    hasFindings = models.BooleanField('hasFindings', null=False)
+    isSkip = models.BooleanField('isSkip', null=False)
+    isDone = models.BooleanField('isDone', null=False)
+    status = models.CharField('status', null=True, max_length=50)
+    uploadTime = models.DateTimeField('uploadTime', null=False)
+    createTime = models.DateTimeField(null=True)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sa_audit_item_check_item_ort'
+
 class KAPPAItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
     lob = models.CharField('lob', null=False, max_length=50)
@@ -185,17 +309,54 @@ class KAPPAItem(models.Model):
     highlight = models.CharField('highlight', null=False, max_length=255)
     scoreLossItem = models.CharField('scoreLossItem', null=False, max_length=999)
     score = models.FloatField('score', null=False)
-    FQCKappaSkillMatrixScores = models.CharField('FQCKappaSkillMatrixScores', null=False, max_length=999)
-    FQCKappaSkillMatrixAverageScore = models.FloatField('FQCKappaSkillMatrixAverageScore', null=False)
+    kappaSkillMatrixScores = models.CharField('kappaSkillMatrixScores', null=False, max_length=999)
+    kappaSkillMatrixAverageScore = models.FloatField('kappaSkillMatrixAverageScore', null=False)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
-    uploadTime = models.DateTimeField('uploadTime', null=False)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
     class Meta:
         db_table = 't_sa_kappa_item'
+
+class KAPPAItemScoreLossItem(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    obaItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    type = models.CharField('type', null=False, max_length=50)
+    year = models.SmallIntegerField('year', null=False)
+    breakDown = models.CharField('breakDown', null=False, max_length=255)
+    scoreLoss = models.FloatField('scoreLoss', null=False)
+    createTime = models.DateTimeField(null=True)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sa_kappa_item_score_loss_item'
+
+class KAPPAItemKappaSkillScoreItem(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    obaItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    type = models.CharField('type', null=False, max_length=50)
+    year = models.SmallIntegerField('year', null=False)
+    name = models.CharField('name', null=False, max_length=99)
+    position = models.CharField('position', null=False, max_length=99)
+    score = models.FloatField('score', null=False)
+    judgement = models.CharField('name', null=False, max_length=50)
+    createTime = models.DateTimeField('createTime', null=False)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sa_kappa_item_kappa_skill_score_item'
 
 class OBAItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
@@ -210,15 +371,55 @@ class OBAItem(models.Model):
     scoreLossItem = models.CharField('scoreLossItem', null=False, max_length=999)
     score = models.FloatField('score', null=False)
     findings = models.CharField('findings', null=False, max_length=999)
+    findingsCount = models.IntegerField('findingsCount', null=False)
     beginTime = models.DateTimeField('beginTime', null=False)
     endTime = models.DateTimeField('endTime', null=False)
-    uploadTime = models.DateTimeField('uploadTime', null=False)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
     class Meta:
         db_table = 't_sa_oba_item'
+
+class OBAItemScoreLossItem(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    obaItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    type = models.CharField('type', null=False, max_length=50)
+    year = models.SmallIntegerField('year', null=False)
+    breakDown = models.CharField('breakDown', null=False, max_length=255)
+    scoreLoss = models.FloatField('scoreLoss', null=False)
+    createTime = models.DateTimeField(null=True)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sa_oba_item_score_loss_item'
+
+class OBAItemMILItem(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    obaItemId = models.BigIntegerField(null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    type = models.CharField('type', null=False, max_length=50)
+    year = models.SmallIntegerField('year', null=False)
+    vendor = models.CharField('vendor', null=False, max_length=50)
+    month = models.SmallIntegerField('month', null=False)
+    quarter = models.CharField('quarter', null=False, max_length=9)
+    auditDate = models.DateTimeField('auditDate', null=False)
+    severity = models.CharField('severity', null=False, max_length=50)
+    findings = models.CharField('severity', null=False, max_length=999)
+    createTime = models.DateTimeField('createTime', null=False)
+    auditorId = models.BigIntegerField('auditorId', null=False)
+    auditor = models.CharField('auditor', null=False, max_length=50)
+    class Meta:
+        db_table = 't_sa_oba_item_mil_item'
 
 class MILItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)

@@ -22,6 +22,10 @@ from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import ObserveType
 from aws_mqaserver.models import KAPPAItem
+
+from aws_mqaserver.apis import kappa_item_score_loss_item
+from aws_mqaserver.apis import kappa_item_kappa_skill_score_item
+
 import json
 
 logger = logging.getLogger('django')
@@ -42,12 +46,14 @@ def upload_kappa_item(request):
     highlight = value.safe_get_in_key(params, 'highlight', '')
     scoreLossItem = validator.validate_not_empty(params, 'scoreLossItem')
     score = validator.validate_float(params, 'score')
-    FQCKappaSkillMatrixScores = validator.validate_not_empty(params, 'FQCKappaSkillMatrixScores')
-    FQCKappaSkillMatrixAverageScore = validator.validate_float(params, 'FQCKappaSkillMatrixAverageScore')
+    kappaSkillMatrixScores = validator.validate_not_empty(params, 'kappaSkillMatrixScores')
+    kappaSkillMatrixAverageScore = validator.validate_float(params, 'kappaSkillMatrixAverageScore')
     auditor = value.safe_get_in_key(params, 'auditor')
-    uploadTime = datetime.datetime.now()
+    createTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
+    scoreLossInfo = json.loads(scoreLossItem)
+    kappa_item_kappa_skill_score_items = json.loads(kappaSkillMatrixScores)
 
     # audit_type_name = 'KAPPA'
     # if type == ObserveType.Cosmetic:
@@ -75,7 +81,7 @@ def upload_kappa_item(request):
     # ]
     # pandas.DataFrame(excel_score_items, columns=['LOB', 'Vendor', 'Audit Year/Month/Date', 'Project', 'Component', 'Item', 'Consmetic Kappa', 'Details', 'Score loss', 'Score']).to_excel(excel_writer, sheet_name='Kappa Score', index=False)
     # excel_fqc_kappa_skill_matrix_items = []
-    # matrix_items = json.loads(FQCKappaSkillMatrixScores)
+    # matrix_items = json.loads(kappaSkillMatrixScores)
     # for item in matrix_items:
     #     excel_fqc_kappa_skill_matrix_items.append([
     #         value.safe_get_in_key(item, 'name'),
@@ -93,16 +99,33 @@ def upload_kappa_item(request):
     # os.remove(excel_temp_path)
 
     entry = KAPPAItem(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                      beginTime=beginTime, endTime=endTime, uploadTime=uploadTime,
+                      beginTime=beginTime, endTime=endTime,
                       year=year,
                       highlight=highlight,
                       scoreLossItem=scoreLossItem,
                       score=score,
-                      FQCKappaSkillMatrixScores=FQCKappaSkillMatrixScores,
-                      FQCKappaSkillMatrixAverageScore=FQCKappaSkillMatrixAverageScore,
-                      createTime=datetime.datetime.now(),
+                      kappaSkillMatrixScores=kappaSkillMatrixScores,
+                      kappaSkillMatrixAverageScore=kappaSkillMatrixAverageScore,
+                      createTime=createTime,
                       auditorId=operator.id, auditor=auditor)
     entry.save()
+    if type == ObserveType.Cosmetic:
+        kappa_item_score_loss_item._batch_add_score_loss_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, [
+            { 'breakDown': 'Kappa Failure Rate', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'kappaFailureRate') },
+            { 'breakDown': 'Sample Condition', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'sampleCondition') },
+            { 'breakDown': 'Kappa Record', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'kappaRecord') },
+            { 'breakDown': 'Audit Support', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'auditSupport') },
+        ])
+    elif type == ObserveType.Surface:
+        kappa_item_score_loss_item._batch_add_score_loss_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, [
+            { 'breakDown': 'Method', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'method') },
+            { 'breakDown': 'Equipment Fixture', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'equipmentFixture') },
+            { 'breakDown': 'Audit Support', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'auditSupport') },
+            { 'breakDown': 'Part Quality', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'partQuality') },
+            { 'breakDown': 'Critical Issues', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'criticalIssues') },
+        ])
+    if kappa_item_kappa_skill_score_items != None and len(kappa_item_kappa_skill_score_items) > 0:
+        kappa_item_kappa_skill_score_item._batch_add_score_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, kappa_item_kappa_skill_score_items)
     return response.ResponseData({
         'id': entry.id
     })

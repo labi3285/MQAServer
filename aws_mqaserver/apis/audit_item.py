@@ -22,6 +22,7 @@ from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import CheckType
 from aws_mqaserver.models import AuditItem
+from aws_mqaserver.apis import audit_item_check_item
 from aws_mqaserver.apis import mil_item
 
 import json
@@ -297,9 +298,10 @@ def upload_audit_item(request):
                         beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, skipCount=skipCount, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
+    if audit_items != None and len(audit_items) > 0:
+        audit_item_check_item._batch_add_check_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, audit_items)
     if all_findings != None and len(all_findings) > 0:
-        mil_item._batch_add_mil_items(entry.id, lob, site, productLine, project, part, type, operator.id,
-                                      auditor, all_findings)
+        mil_item._batch_add_mil_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, all_findings)
         return response.ResponseData({
             'id': entry.id
         })

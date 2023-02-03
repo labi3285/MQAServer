@@ -23,6 +23,7 @@ from aws_mqaserver.utils import ids
 from aws_mqaserver.team_Display.models import DisplayCheckType
 from aws_mqaserver.team_Display.models import DisplayAuditItem
 
+from aws_mqaserver.team_Display.apis import audit_item_check_item
 from aws_mqaserver.team_Display.apis import mil_item
 
 import json
@@ -181,6 +182,8 @@ def upload_audit_item(request):
                         beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, skipCount=skipCount, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, findingCount=findingCount, rawJson=rawJson, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
+    if audit_items != None and len(audit_items) > 0:
+        audit_item_check_item._batch_add_check_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, audit_items)
     if all_findings != None and len(all_findings) > 0:
         mil_item._batch_add_mil_items(entry.id, lob, site, productLine, project, part, type, operator.id,
                                       auditor, all_findings)
