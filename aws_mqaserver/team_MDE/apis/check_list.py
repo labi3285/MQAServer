@@ -33,6 +33,7 @@ def upload_check_list(request):
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
     project = validator.validate_not_empty(params, 'project')
+    part = value.safe_get_in_key(params, 'part', '')
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
     if operator.role != 'super_admin' and operator.role != 'admin':
@@ -40,22 +41,22 @@ def upload_check_list(request):
             return response.ResponseError('Operation Forbidden')
     # add
     try:
-        entry = MDECheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project)
+        entry = MDECheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
         entry.updateTime = datetime.datetime.now()
         entry.updaterId = operator.id
         entry.updater = operator.name
         entry.save()
         check_list_item._batch_delete_check_list_items(entry.id)
         check_list_item._batch_add_check_list_items(entry.id, json.loads(rawJson))
-        line = MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project)
+        line = MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=None)
         line.checkListId = entry.id
         line.save()
         return response.ResponseData('Uploaded')
     except MDECheckList.DoesNotExist:
-        entry = MDECheckList(lob=lob, site=site, productLine=productLine, project=project, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
+        entry = MDECheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
         entry.save()
         check_list_item._batch_add_check_list_items(entry.id, json.loads(rawJson))
-        line = MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project)
+        line = MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=None)
         line.checkListId = entry.id
         line.save()
         return response.ResponseData('Uploaded')
@@ -73,8 +74,12 @@ def get_check_lists_page(request):
     site = value.safe_get_in_key(params, 'site')
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
+    part = value.safe_get_in_key(params, 'part')
     if operator.role != 'super_admin' and operator.role != 'admin' and not ids.contains_id(lob, operator.lob):
         return response.ResponseError('Operation Forbidden')
+    if part != None:
+        if project == None:
+            return response.ResponseError('Params Error')
     if project != None:
         if productLine == None:
             return response.ResponseError('Params Error')
@@ -92,6 +97,8 @@ def get_check_lists_page(request):
             list = list.filter(site=site)
         if productLine != None:
             list = list.filter(productLine=productLine)
+        if project != None:
+            list = list.filter(project=project)
         if list is None:
             return response.ResponseData({
                 'total': 0,
@@ -118,8 +125,9 @@ def find_check_list(request):
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
     project = validator.validate_not_empty(params, 'project')
+    part = value.safe_get_in_key(params, 'part', '')
     try:
-        entry = MDECheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project)
+        entry = MDECheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
         return response.ResponseData(model_to_dict(entry))
     except MDECheckList.DoesNotExist:
         return response.ResponseData(None)

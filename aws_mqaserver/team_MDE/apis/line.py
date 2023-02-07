@@ -16,12 +16,12 @@ from aws_mqaserver.utils import token
 from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import User
-from aws_mqaserver.models import AuditType
 from aws_mqaserver.team_MDE.models import MDELine
 
 import json
 
 logger = logging.getLogger('django')
+
 
 # Add Line
 @transaction.atomic
@@ -32,6 +32,9 @@ def add_line(request):
     site = value.safe_get_in_key(params, 'site')
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
+    part = value.safe_get_in_key(params, 'part')
+    if part != None and project == None:
+        return response.ResponseError('Params Error')
     if project != None and productLine == None:
         return response.ResponseError('Params Error')
     if productLine != None and site == None:
@@ -45,7 +48,7 @@ def add_line(request):
             return response.ResponseError('Operation Forbidden')
     # check duplicate name
     try:
-        MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project)
+        MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
         return response.ResponseError('Name Duplicate')
     except MDELine.DoesNotExist:
         pass
@@ -58,9 +61,10 @@ def add_line(request):
         user.lob = user.lob + lob + '/'
         user.save()
     # add line
-    line = MDELine(lob=lob, site=site, productLine=productLine, project=project)
+    line = MDELine(lob=lob, site=site, productLine=productLine, project=project, part=part)
     line.save()
     return response.ResponseData('Add Success')
+
 
 # Delete Line
 def delete_line(request):
@@ -81,17 +85,20 @@ def delete_line(request):
             return response.ResponseError('Operation Forbidden')
         # only lob_dri and admin can delete line
         if operator.role != 'lob_dri':
-            return response.ResponseError('Operation Forbidden') 
-        # lob_dri can only delete lob sub line
+            return response.ResponseError('Operation Forbidden')
+            # lob_dri can only delete lob sub line
         if not ids.contains_id(line.lob, operator.lob):
-            return response.ResponseError('Operation Forbidden') 
-    # delete line
+            return response.ResponseError('Operation Forbidden')
+            # delete line
     try:
-        if line.project != None:
+        if line.part != None:
             line.delete()
         else:
             list = None
-            if line.productLine != None:
+            if line.project != None:
+                list = MDELine.objects.filter(lob=line.lob, site=line.site, productLine=line.productLine,
+                                                    project=line.project)
+            elif line.productLine != None:
                 list = MDELine.objects.filter(lob=line.lob, site=line.site, productLine=line.productLine)
             elif line.site != None:
                 list = MDELine.objects.filter(lob=line.lob, site=line.site)
@@ -99,10 +106,11 @@ def delete_line(request):
                 list = MDELine.objects.filter(lob=line.lob)
             for e in list:
                 e.delete()
-        return response.ResponseData('Deleted')        
+        return response.ResponseData('Deleted')
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
+
 
 # Get Lines Page
 def get_lines_page(request):
@@ -122,7 +130,7 @@ def get_lines_page(request):
             return response.ResponseError('Params Error')
     if site != None:
         if lob == None:
-            return response.ResponseError('Params Error') 
+            return response.ResponseError('Params Error')
     try:
         list = MDELine.objects.all()
         if lob != None:
@@ -150,8 +158,8 @@ def get_lines_page(request):
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')
-    
-    
+
+
 # Get Level Lines
 def get_level_lines(request):
     operator = validator.checkout_token_user(request)
@@ -182,7 +190,11 @@ def get_level_lines(request):
                 if productLine == None:
                     list = list.filter(productLine__isnull=False, project__isnull=True)
                 else:
-                    list = list.filter(productLine=productLine).filter(project__isnull=False)
+                    list = list.filter(productLine=productLine)
+                    if project == None:
+                        list = list.filter(project__isnull=False, part__isnull=True)
+                    else:
+                        list = list.filter(project=project).filter(part__isnull=False)
         arr = []
         for e in list:
             arr.append(model_to_dict(e))
@@ -245,7 +257,7 @@ def get_lines_tree(request):
                         if sub == None:
                             sub = [a]
                             productLines_dic[productLine] = sub
-                            info_cache[lob + '/' + site  + '/' + productLine] = a
+                            info_cache[lob + '/' + site + '/' + productLine] = a
                         else:
                             sub.append(a)
                 lobs_dic.get(lob)[site] = productLines_dic
@@ -254,12 +266,33 @@ def get_lines_tree(request):
         for lob in lobs_dic:
             for site in lobs_dic.get(lob):
                 for productLine in lobs_dic.get(lob).get(site):
-                    arr = []
+                    projects_dic = {}
                     for a in lobs_dic.get(lob).get(site).get(productLine):
                         project = a.get('project')
-                        if project != None:
-                            arr.append(a)
-                        lobs_dic.get(lob).get(site)[productLine] = arr
+                        sub = value.safe_get_in_key(projects_dic, project)
+                        if project == None:
+                            pass
+                        else:
+                            if sub == None:
+                                sub = [a]
+                                projects_dic[project] = sub
+                                info_cache[lob + '/' + site + '/' + productLine + '/' + project] = a
+                            else:
+                                sub.append(a)
+                    lobs_dic.get(lob).get(site)[productLine] = projects_dic
+
+        # filte part
+        for lob in lobs_dic:
+            for site in lobs_dic.get(lob):
+                for productLine in lobs_dic.get(lob).get(site):
+                    for project in lobs_dic.get(lob).get(site).get(productLine):
+                        arr = []
+                        for a in lobs_dic.get(lob).get(site).get(productLine).get(project):
+                            part = a.get('part')
+                            if part != None:
+                                arr.append(a)
+                        lobs_dic.get(lob).get(site).get(productLine)[project] = arr
+
         lobs = []
         for lob in lobs_dic:
             sites = []
@@ -273,24 +306,40 @@ def get_lines_tree(request):
                     projects = []
                     projects_check_list_uploaded = 0
                     projects_check_list_total = 0
-                    for e in lobs_dic.get(lob).get(site).get(productLine):
-                        checkListId = value.safe_get_in_key(e, 'checkListId')
-                        projects_check_list_total += 1
+                    for project in lobs_dic.get(lob).get(site).get(productLine):
+                        parts = []
+                        # print(project)
+                        project_info = info_cache.get(lob + '/' + site + '/' + productLine + '/' + project)
+                        checkListId = value.safe_get_in_key(project_info, 'checkListId')
+                        project_check_list_uploaded = 0
                         if checkListId != None:
-                            projects_check_list_uploaded += 1
-                        # project_info = info_cache.get(lob + '/' + site + '/' + productLine + '/' + project)
+                            project_check_list_uploaded += 1
+                        for e in lobs_dic.get(lob).get(site).get(productLine).get(project):
+                            parts.append({
+                                'id': e.get('id'),
+                                'lob': lob,
+                                'site': site,
+                                'productLine': productLine,
+                                'project': project,
+                                'part': e.get('part'),
+                                'name': e.get('part'),
+                                'type': 'part',
+                            })
                         projects.append({
-                            'id': e.get('id'),
+                            'id': project_info.get('id'),
                             'lob': lob,
                             'site': site,
                             'productLine': productLine,
-                            'project': e.get('project'),
-                            'name': e.get('project'),
-                            'checkListId': checkListId,
+                            'project': project,
+                            'name': project,
                             'type': 'project',
-                            'checkListUploaded': projects_check_list_uploaded,
-                            'checkListTotal': projects_check_list_total,
+                            'sub': parts,
+                            'checkListId': checkListId,
+                            'checkListUploaded': project_check_list_uploaded,
+                            'checkListTotal': 1,
                         })
+                        projects_check_list_uploaded += project_check_list_uploaded
+                        projects_check_list_total += 1
                     productLine_info = info_cache.get(lob + '/' + site + '/' + productLine)
                     productLines.append({
                         'id': productLine_info.get('id'),

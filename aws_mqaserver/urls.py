@@ -40,6 +40,7 @@ import aws_mqaserver.apis.box
 import aws_mqaserver.team_MDE.apis.line
 import aws_mqaserver.team_MDE.apis.check_list
 import aws_mqaserver.team_MDE.apis.check_list_item
+import aws_mqaserver.team_MDE.apis.audit_item
 
 import aws_mqaserver.team_Accessory.apis.line
 import aws_mqaserver.team_Accessory.apis.check_list
@@ -131,6 +132,8 @@ urlpatterns = [
     path('mde/delete_check_list', aws_mqaserver.team_MDE.apis.check_list.delete_check_list),
     path('mde/get_check_list_items_page', aws_mqaserver.team_MDE.apis.check_list_item.get_check_list_items_page),
     path('mde/get_check_list_items', aws_mqaserver.team_MDE.apis.check_list_item.get_check_list_items),
+
+    path('mde/upload_audit_item', aws_mqaserver.team_MDE.apis.audit_item.upload_audit_item),
 
     # Accessory
 
