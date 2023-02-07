@@ -210,8 +210,17 @@ def get_level_lines(request):
 def get_lines_tree(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
+    deepth = value.safe_get_in_key(params, 'deepth', 'part')
     try:
         list = MDELine.objects.all()
+        if deepth == 'project':
+            list = list.filter(part=None)
+        elif deepth == 'productLine':
+            list = list.filter(project=None)
+        elif deepth == 'site':
+            list = list.filter(productLine=None)
+        elif deepth == 'lob':
+            list = list.filter(site=None)
         arr = []
         for e in list:
             arr.append(model_to_dict(e))
