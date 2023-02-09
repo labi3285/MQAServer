@@ -43,22 +43,8 @@ def upload_check_list(request):
             return response.ResponseError('Operation Forbidden')
     # add
     try:
-        entry = AccessoryCheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
-        entry.updateTime = datetime.datetime.now()
-        entry.updaterId = operator.id
-        entry.updater = operator.name
-        entry.save()
-        check_list_item._batch_delete_check_list_items(entry.id, type)
-        check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
-        line = AccessoryLine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
-        if type == AccessoryCheckType.Glue:
-            line.checkListId_Glue = entry.id
-        elif type == AccessoryCheckType.Destructive:
-            line.checkListId_Destructive = entry.id
-        line.save()
-        return response.ResponseData('Uploaded')
-    except AccessoryCheckList.DoesNotExist:
-        entry = AccessoryCheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
+        entry = AccessoryCheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
+                                   createTime=datetime.datetime.now(), updaterId=operator.id, updater=operator.name)
         entry.save()
         check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
         line = AccessoryLine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)

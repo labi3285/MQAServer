@@ -41,19 +41,8 @@ def upload_check_list(request):
             return response.ResponseError('Operation Forbidden')
     # add
     try:
-        entry = MDECheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
-        entry.updateTime = datetime.datetime.now()
-        entry.updaterId = operator.id
-        entry.updater = operator.name
-        entry.save()
-        check_list_item._batch_delete_check_list_items(entry.id)
-        check_list_item._batch_add_check_list_items(entry.id, json.loads(rawJson))
-        line = MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=None)
-        line.checkListId = entry.id
-        line.save()
-        return response.ResponseData('Uploaded')
-    except MDECheckList.DoesNotExist:
-        entry = MDECheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
+        entry = MDECheckList(lob=lob, site=site, productLine=productLine, project=project, part=part,
+                             createTime=datetime.datetime.now(), updaterId=operator.id, updater=operator.name)
         entry.save()
         check_list_item._batch_add_check_list_items(entry.id, json.loads(rawJson))
         line = MDELine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=None)

@@ -43,25 +43,7 @@ def upload_check_list(request):
             return response.ResponseError('Operation Forbidden')
     # add
     try:
-        entry = CheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
-        entry.rawJson = rawJson
-        entry.updateTime = datetime.datetime.now()
-        entry.updaterId = operator.id
-        entry.updater = operator.name
-        entry.save()
-        check_list_item._batch_delete_check_list_items(entry.id, type)
-        check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
-        line = Line.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
-        if type == CheckType.Module:
-            line.checkListId_Module = entry.id
-        elif type == CheckType.Enclosure:
-            line.checkListId_Enclosure = entry.id
-        elif type == CheckType.ORT:
-            line.checkListId_ORT = entry.id
-        line.save()
-        return response.ResponseData('Uploaded')
-    except CheckList.DoesNotExist:
-        entry = CheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type, createTime=datetime.datetime.now(), updaterId = operator.id, updater = operator.name)
+        entry = CheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type, createTime=datetime.datetime.now(), updaterId=operator.id, updater=operator.name)
         entry.save()
         check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
         line = Line.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
