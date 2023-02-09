@@ -221,9 +221,11 @@ def get_lines_tree(request):
             if sub == None:
                 sub = [a]
                 lobs_dic[lob] = sub
-                info_cache[lob] = a
             else:
                 sub.append(a)
+            if a.get('site') == None:
+                info_cache[lob] = a
+
         # filte site
         for lob in lobs_dic:
             sites_dic = {}
@@ -236,10 +238,12 @@ def get_lines_tree(request):
                     if sub == None:
                         sub = [a]
                         sites_dic[site] = sub
-                        info_cache[lob + '/' + site] = a
                     else:
                         sub.append(a)
+                    if a.get('productLine') == None:
+                        info_cache[lob + '/' + site] = a
             lobs_dic[lob] = sites_dic
+
         # filte productLine
         for lob in lobs_dic:
             for site in lobs_dic.get(lob):
@@ -253,9 +257,10 @@ def get_lines_tree(request):
                         if sub == None:
                             sub = [a]
                             productLines_dic[productLine] = sub
-                            info_cache[lob + '/' + site  + '/' + productLine] = a
                         else:
                             sub.append(a)
+                        if a.get('project') == None:
+                            info_cache[lob + '/' + site + '/' + productLine] = a
                 lobs_dic.get(lob)[site] = productLines_dic
 
         # filte project
@@ -272,9 +277,10 @@ def get_lines_tree(request):
                             if sub == None:
                                 sub = [a]
                                 projects_dic[project] = sub
-                                info_cache[lob + '/' + site + '/' + productLine + '/' + project] = a
                             else:
                                 sub.append(a)
+                            if a.get('part') == None:
+                                info_cache[lob + '/' + site + '/' + productLine + '/' + project] = a
                     lobs_dic.get(lob).get(site)[productLine] = projects_dic
 
         # filte part
