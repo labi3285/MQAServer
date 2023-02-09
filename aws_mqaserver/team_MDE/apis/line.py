@@ -301,7 +301,6 @@ def get_lines_tree(request):
                             if part != None:
                                 arr.append(a)
                         lobs_dic.get(lob).get(site).get(productLine)[project] = arr
-
         lobs = []
         for lob in lobs_dic:
             sites = []
@@ -317,7 +316,6 @@ def get_lines_tree(request):
                     projects_check_list_total = 0
                     for project in lobs_dic.get(lob).get(site).get(productLine):
                         parts = []
-                        # print(project)
                         project_info = info_cache.get(lob + '/' + site + '/' + productLine + '/' + project)
                         checkListId = value.safe_get_in_key(project_info, 'checkListId')
                         project_check_list_uploaded = 0
@@ -343,7 +341,9 @@ def get_lines_tree(request):
                             'name': project,
                             'type': 'project',
                             'sub': parts,
-                            'checkListId': checkListId,
+                            'checkListId': 4,
+
+                            # 'checkListId': checkListId,
                             'checkListUploaded': project_check_list_uploaded,
                             'checkListTotal': 1,
                         })
