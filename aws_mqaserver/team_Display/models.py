@@ -10,7 +10,7 @@ class DisplayLine(models.Model):
     productLine = models.CharField('productLine', null=True, max_length=50)
     project = models.CharField('project', null=True, max_length=50)
     part = models.CharField('part', null=True, max_length=50)
-    checkListId_Enclosure = models.BigIntegerField('checkListId_Enclosure', null=True)
+    checkListId = models.BigIntegerField('checkListId', null=True)
     class Meta:
         db_table = 't_display_line'
 

@@ -69,6 +69,7 @@ def get_check_lists_page(request):
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
+    type = value.safe_get_in_key(params, 'type')
     if operator.role != 'super_admin' and operator.role != 'admin' and not ids.contains_id(lob, operator.lob):
         return response.ResponseError('Operation Forbidden')
     if part != None:
@@ -93,6 +94,9 @@ def get_check_lists_page(request):
             list = list.filter(productLine=productLine)
         if project != None:
             list = list.filter(project=project)
+        if type != None:
+            list = list.filter(type=type)
+        list = list.order_by('-createTime')
         if list is None:
             return response.ResponseData({
                 'total': 0,
@@ -107,25 +111,6 @@ def get_check_lists_page(request):
             'total': paginator.count,
             'list': arr
         })
-    except Exception:
-        traceback.print_exc()
-        return response.ResponseError('System Error')
-
-# Find One Check List
-def find_check_list(request):
-    operator = validator.checkout_token_user(request)
-    params = json.loads(request.body.decode())
-    lob = validator.validate_not_empty(params, 'lob')
-    site = validator.validate_not_empty(params, 'site')
-    productLine = validator.validate_not_empty(params, 'productLine')
-    project = validator.validate_not_empty(params, 'project')
-    part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_not_empty(params, 'type')
-    try:
-        entry = AccessoryCheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
-        return response.ResponseData(model_to_dict(entry))
-    except AccessoryCheckList.DoesNotExist:
-        return response.ResponseData(None)
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')

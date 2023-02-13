@@ -132,8 +132,6 @@ class AccessoryAuditItemCheckItemGluePoint(models.Model):
     checkItem_unit = models.CharField('checkItem_unit', null=False, max_length=255)
     checkItem_LSL = models.CharField('checkItem_LSL', null=False, max_length=99)
     checkItem_USL = models.CharField('checkItem_USL', null=False, max_length=99)
-    before = models.FloatField('before', null=False)
-    after = models.FloatField('after', null=False)
     result = models.FloatField('result', null=False)
     outOfSpec = models.BooleanField('outOfSpec', null=False)
     uploadTime = models.DateTimeField('uploadTime', null=False)

@@ -182,8 +182,6 @@ def _batch_add_check_items_points(auditItemId, lob, site, productLine, project, 
             checkItem_unit = value.safe_get_in_key(check_item, 'unit', '')
             checkItem_LSL = value.safe_get_in_key(check_item, 'LSL', '')
             checkItem_USL = value.safe_get_in_key(check_item, 'USL', '')
-            before = value.safe_get_in_key(e, 'before', 0)
-            after = value.safe_get_in_key(e, 'after', 0)
             result = value.safe_get_in_key(e, 'result', 0)
             outOfSpec = value.safe_get_bool_in_key(e, 'outOfSpec', False)
             createTime = value.safe_get_date_in_key(e, 'createTime')
@@ -204,8 +202,6 @@ def _batch_add_check_items_points(auditItemId, lob, site, productLine, project, 
                 checkItem_unit=checkItem_unit,
                 checkItem_LSL=checkItem_LSL,
                 checkItem_USL=checkItem_USL,
-                before=before,
-                after=after,
                 result=result,
                 outOfSpec=outOfSpec,
                 createTime=createTime,

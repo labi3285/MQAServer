@@ -88,6 +88,7 @@ def get_check_lists_page(request):
             list = list.filter(productLine=productLine)
         if project != None:
             list = list.filter(project=project)
+        list = list.order_by('-createTime')
         if list is None:
             return response.ResponseData({
                 'total': 0,
@@ -102,24 +103,6 @@ def get_check_lists_page(request):
             'total': paginator.count,
             'list': arr
         })
-    except Exception:
-        traceback.print_exc()
-        return response.ResponseError('System Error')
-
-# Find One Check List
-def find_check_list(request):
-    operator = validator.checkout_token_user(request)
-    params = json.loads(request.body.decode())
-    lob = validator.validate_not_empty(params, 'lob')
-    site = validator.validate_not_empty(params, 'site')
-    productLine = validator.validate_not_empty(params, 'productLine')
-    project = validator.validate_not_empty(params, 'project')
-    part = value.safe_get_in_key(params, 'part', '')
-    try:
-        entry = MDECheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
-        return response.ResponseData(model_to_dict(entry))
-    except MDECheckList.DoesNotExist:
-        return response.ResponseData(None)
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')

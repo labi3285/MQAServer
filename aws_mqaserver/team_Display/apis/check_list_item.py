@@ -27,11 +27,8 @@ def get_check_list_items(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     checkListId = validator.validate_not_empty(params, 'checkListId')
-    type = validator.validate_not_empty(params, 'type')
     try:
-        list = None
-        if type == DisplayCheckType.Enclosure:
-            list = DisplayCheckListItemEnclosure.objects.all().filter(checkListId=checkListId).order_by("sn")
+        list = DisplayCheckListItemEnclosure.objects.all().filter(checkListId=checkListId).order_by("sn")
         if list is None:
             return response.ResponseData([])
         arr = []
@@ -49,11 +46,8 @@ def get_check_list_items_page(request):
     pageNum = validator.validate_not_empty(params, 'pageNum')
     pageSize = validator.validate_not_empty(params, 'pageSize')
     checkListId = validator.validate_not_empty(params, 'checkListId')
-    type = validator.validate_not_empty(params, 'type')
     try:
-        list = None
-        if type == DisplayCheckType.Enclosure:
-            list = DisplayCheckListItemEnclosure.objects.all().filter(checkListId=checkListId).order_by("sn")
+        list = DisplayCheckListItemEnclosure.objects.all().filter(checkListId=checkListId).order_by("sn")
         if list is None:
             return response.ResponseData({
                 'total': 0,
@@ -72,45 +66,43 @@ def get_check_list_items_page(request):
         traceback.print_exc()
         return response.ResponseError('System Error')
 
-def _batch_delete_check_list_items(checkListId, type):
-    if type == DisplayCheckType.Enclosure:
-        list = DisplayCheckListItemEnclosure.objects.filter(checkListId=checkListId)
-        for e in list:
-            e.delete()
+def _batch_delete_check_list_items(checkListId):
+    list = DisplayCheckListItemEnclosure.objects.filter(checkListId=checkListId)
+    for e in list:
+        e.delete()
 
 def _batch_add_check_list_items(checkListId, type, dicArr):
-    if type == DisplayCheckType.Enclosure:
-        batch = []
-        for e in dicArr:
-            sn = validator.validate_integer(e, 'SN')
-            area = value.safe_get_in_key(e, 'Area', '')
-            mainProcess = validator.validate_not_empty_in_keys(e, ['Main process', 'Process'])
-            subProcess = validator.validate_not_empty_in_keys(e, ['Sub process (Station/Process description)', 'Sub-Process/Section'])
-            checkItems = validator.validate_not_empty(e, 'Check Items')
-            samplingSize = value.safe_get_in_key(e, 'Sampling Size', '')
-            lookingFor = value.safe_get_in_keys(e, ['Looking For', 'Looking-for'], '')
-            recordsFindings = value.safe_get_in_key(e, ['Records Findings', 'Records/Findings'], '')
-            result = value.safe_get_in_key(e, 'Result', '')
-            auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
-            disScore = value.safe_get_in_key(e, 'DIS Score')
-            disTimes = value.safe_get_in_key(e, 'Times')
-            skip = value.safe_get_in_key(e, 'Skip')
-            item = DisplayCheckListItemEnclosure(
-                checkListId=checkListId,
-                sn=sn,
-                area=area,
-                mainProcess=mainProcess,
-                subProcess=subProcess,
-                checkItems=checkItems,
-                samplingSize=samplingSize,
-                lookingFor=lookingFor,
-                recordsFindings=recordsFindings,
-                result=result,
-                auditSampleSize=auditSampleSize,
-                disScore=disScore,
-                disTimes=disTimes,
-                skip=skip,
-                )
-            batch.append(item)
-        DisplayCheckListItemEnclosure.objects.bulk_create(batch, batch_size=len(batch))
+    batch = []
+    for e in dicArr:
+        sn = validator.validate_integer(e, 'SN')
+        area = value.safe_get_in_key(e, 'Area', '')
+        mainProcess = validator.validate_not_empty_in_keys(e, ['Main process', 'Process'])
+        subProcess = validator.validate_not_empty_in_keys(e, ['Sub process (Station/Process description)', 'Sub-Process/Section'])
+        checkItems = validator.validate_not_empty(e, 'Check Items')
+        samplingSize = value.safe_get_in_key(e, 'Sampling Size', '')
+        lookingFor = value.safe_get_in_keys(e, ['Looking For', 'Looking-for'], '')
+        recordsFindings = value.safe_get_in_key(e, ['Records Findings', 'Records/Findings'], '')
+        result = value.safe_get_in_key(e, 'Result', '')
+        auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
+        disScore = value.safe_get_in_key(e, 'DIS Score')
+        disTimes = value.safe_get_in_key(e, 'Times')
+        skip = value.safe_get_in_key(e, 'Skip')
+        item = DisplayCheckListItemEnclosure(
+            checkListId=checkListId,
+            sn=sn,
+            area=area,
+            mainProcess=mainProcess,
+            subProcess=subProcess,
+            checkItems=checkItems,
+            samplingSize=samplingSize,
+            lookingFor=lookingFor,
+            recordsFindings=recordsFindings,
+            result=result,
+            auditSampleSize=auditSampleSize,
+            disScore=disScore,
+            disTimes=disTimes,
+            skip=skip,
+            )
+        batch.append(item)
+    DisplayCheckListItemEnclosure.objects.bulk_create(batch, batch_size=len(batch))
 

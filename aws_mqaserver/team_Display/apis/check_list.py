@@ -16,14 +16,14 @@ from aws_mqaserver.utils import token
 from aws_mqaserver.utils import base64
 from aws_mqaserver.utils import ids
 
-from aws_mqaserver.team_Display.models import DisplayCheckType
-from aws_mqaserver.team_Display.models import DisplayCheckList
 from aws_mqaserver.team_Display.models import DisplayLine
+from aws_mqaserver.team_Display.models import DisplayCheckList
 from aws_mqaserver.team_Display.apis import check_list_item
 
 import json
 
 logger = logging.getLogger('django')
+
 
 # Admin Upload CheckList
 @transaction.atomic
@@ -34,8 +34,8 @@ def upload_check_list(request):
     site = validator.validate_not_empty(params, 'site')
     productLine = validator.validate_not_empty(params, 'productLine')
     project = validator.validate_not_empty(params, 'project')
-    part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_not_empty(params, 'type')
+    part = value.safe_get_in_key(params, 'part', '')
+    type = value.safe_get_in_key(params, 'part', 'Enclosure')
     rawJsonBase64 = validator.validate_not_empty(params, 'rawJson')
     rawJson = base64.base64ToString(rawJsonBase64)
     if operator.role != 'super_admin' and operator.role != 'admin':
@@ -44,17 +44,17 @@ def upload_check_list(request):
     # add
     try:
         entry = DisplayCheckList(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                                 createTime=datetime.datetime.now(), updaterId=operator.id, updater=operator.name)
+                             createTime=datetime.datetime.now(), updaterId=operator.id, updater=operator.name)
         entry.save()
         check_list_item._batch_add_check_list_items(entry.id, type, json.loads(rawJson))
-        line = DisplayLine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part)
-        if type == DisplayCheckType.Enclosure:
-            line.checkListId_Enclosure = entry.id
+        line = DisplayLine.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=None)
+        line.checkListId = entry.id
         line.save()
         return response.ResponseData('Uploaded')
     except Exception as e:
         traceback.print_exc()
         raise e
+
 
 # Get CheckLists Page
 def get_check_lists_page(request):
@@ -67,6 +67,7 @@ def get_check_lists_page(request):
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
+    type = value.safe_get_in_key(params, 'type')
     if operator.role != 'super_admin' and operator.role != 'admin' and not ids.contains_id(lob, operator.lob):
         return response.ResponseError('Operation Forbidden')
     if part != None:
@@ -80,7 +81,7 @@ def get_check_lists_page(request):
             return response.ResponseError('Params Error')
     if site != None:
         if lob == None:
-            return response.ResponseError('Params Error') 
+            return response.ResponseError('Params Error')
     try:
         list = DisplayCheckList.objects.all()
         if lob != None:
@@ -91,6 +92,9 @@ def get_check_lists_page(request):
             list = list.filter(productLine=productLine)
         if project != None:
             list = list.filter(project=project)
+        if type != None:
+            list = list.filter(type=type)
+        list = list.order_by('-createTime')
         if list is None:
             return response.ResponseData({
                 'total': 0,
@@ -109,26 +113,7 @@ def get_check_lists_page(request):
         traceback.print_exc()
         return response.ResponseError('System Error')
 
-# Find One Check List
-def find_check_list(request):
-    operator = validator.checkout_token_user(request)
-    params = json.loads(request.body.decode())
-    lob = validator.validate_not_empty(params, 'lob')
-    site = validator.validate_not_empty(params, 'site')
-    productLine = validator.validate_not_empty(params, 'productLine')
-    project = validator.validate_not_empty(params, 'project')
-    part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_not_empty(params, 'type')
-    try:
-        entry = DisplayCheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
-        return response.ResponseData(model_to_dict(entry))
-    except DisplayCheckList.DoesNotExist:
-        return response.ResponseData(None)
-    except Exception:
-        traceback.print_exc()
-        return response.ResponseError('System Error')
 
-    
 # Delete Check List
 def delete_check_list(request):
     operator = validator.checkout_token_user(request)
@@ -151,7 +136,7 @@ def delete_check_list(request):
     # delete
     try:
         entry.delete()
-        return response.ResponseData('Deleted')        
+        return response.ResponseData('Deleted')
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')

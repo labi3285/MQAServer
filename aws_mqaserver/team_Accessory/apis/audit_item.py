@@ -126,10 +126,8 @@ def upload_audit_item(request):
     #             arr = []
     #             if type == AccessoryCheckType.Glue:
     #                 for p in points:
-    #                     before = value.safe_get_in_key(p, 'before', 0)
-    #                     after = value.safe_get_in_key(p, 'after', 0)
     #                     result = value.safe_get_in_key(p, 'result', 0)
-    #                     excel_point_items.append([ sn, before, after, result ])
+    #                     excel_point_items.append([ sn, result ])
     #             elif type == AccessoryCheckType.Destructive:
     #                 for p in points:
     #                     result = value.safe_get_in_key(p, 'result', 0)

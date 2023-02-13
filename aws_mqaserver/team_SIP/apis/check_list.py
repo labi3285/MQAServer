@@ -109,25 +109,6 @@ def get_check_lists_page(request):
         traceback.print_exc()
         return response.ResponseError('System Error')
 
-# Find One Check List
-def find_check_list(request):
-    operator = validator.checkout_token_user(request)
-    params = json.loads(request.body.decode())
-    lob = validator.validate_not_empty(params, 'lob')
-    site = validator.validate_not_empty(params, 'site')
-    productLine = validator.validate_not_empty(params, 'productLine')
-    project = validator.validate_not_empty(params, 'project')
-    part = validator.validate_not_empty(params, 'part')
-    type = validator.validate_not_empty(params, 'type')
-    try:
-        entry = SIPCheckList.objects.get(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type)
-        return response.ResponseData(model_to_dict(entry))
-    except SIPCheckList.DoesNotExist:
-        return response.ResponseData(None)
-    except Exception:
-        traceback.print_exc()
-        return response.ResponseError('System Error')
-
     
 # Delete Check List
 def delete_check_list(request):
