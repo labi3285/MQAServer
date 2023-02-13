@@ -94,6 +94,8 @@ def get_check_lists_page(request):
             list = list.filter(productLine=productLine)
         if project != None:
             list = list.filter(project=project)
+        if part != None:
+            list = list.filter(part=part)
         if type != None:
             list = list.filter(type=type)
         list = list.order_by('-createTime')

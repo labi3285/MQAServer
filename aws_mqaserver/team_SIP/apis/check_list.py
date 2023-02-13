@@ -91,6 +91,8 @@ def get_check_lists_page(request):
             list = list.filter(productLine=productLine)
         if project != None:
             list = list.filter(project=project)
+        if part != None:
+            list = list.filter(part=part)
         if list is None:
             return response.ResponseData({
                 'total': 0,
