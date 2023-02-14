@@ -32,12 +32,18 @@ def update_mil_item(request):
     operator = validator.checkout_token_user(request)
     params = json.loads(request.body.decode())
     id = value.safe_get_in_key(params, 'id')
-    type = validator.validate_not_empty(params, 'type')
+    type = value.safe_get_in_key(params, 'type', '')
+    auditType = value.safe_get_in_key(params, 'auditType')
     lob = validator.validate_not_empty(params, 'lob')
     site = value.safe_get_in_key(params, 'site')
     productLine = value.safe_get_in_key(params, 'productLine')
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
+    if auditType == None:
+        if type == 'Module' or type == 'Enclosure':
+            auditType = 'Process'
+        elif type == 'ORT':
+            auditType = 'ORT'
     if operator.role == 'admin' and operator.team != 'MQA':
         return response.ResponseError('Operation Forbidden')
     if (operator.role == 'lob_dri' or operator.role == 'lob_auditor') and (operator.team != 'MQA' or not ids.contains_id(lob, operator.lob)):
@@ -87,6 +93,7 @@ def update_mil_item(request):
             part=part,
             sn=sn,
             type=type,
+            auditType=auditType,
             year=year,
             month=month,
             day=day,
@@ -177,6 +184,7 @@ def get_mil_items_page(request):
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
     type = value.safe_get_in_key(params, 'type')
+    auditType = value.safe_get_in_key(params, 'auditType')
     if operator.role != 'super_admin' and operator.role != 'admin':
         if lob != None and not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
@@ -196,6 +204,8 @@ def get_mil_items_page(request):
         list = MILItem.objects.all()
         if type != None:
             list = list.filter(type=type)
+        if auditType != None:
+            list = list.filter(auditType=auditType)
         if lob != None:
             list = list.filter(lob=lob)
         if site != None:
