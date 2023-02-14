@@ -22,6 +22,7 @@ from aws_mqaserver.utils import ids
 
 from aws_mqaserver.models import CheckType
 from aws_mqaserver.models import MILItem
+from aws_mqaserver.models import MILScoreItem
 
 import json
 
@@ -252,9 +253,13 @@ def delete_mil_item(request):
 
 def _batch_add_mil_items(auditItemId, lob, site, productLine, project, part, type, auditorId, auditor, dicArr):
     batch = []
+    auditType = None
+    if type == 'Module' or type == 'Enclosure':
+        auditType = 'Process'
+    elif type == 'ORT':
+        auditType = 'ORT'
     for e in dicArr:
         sn = validator.validate_integer(e, 'sn')
-        type = value.safe_get_in_key(e, 'processType', type)
         createTime = validator.validate_date(e, 'createTime')
         year = createTime.year
         month = createTime.month
@@ -309,6 +314,7 @@ def _batch_add_mil_items(auditItemId, lob, site, productLine, project, part, typ
             vendor=site,
             station=station,
             projectPart=project + part,
+            auditType=auditType,
             byAuditCategory=byAuditCategory,
             programRelated=programRelated,
             issueCategory=issueCategory,
@@ -325,4 +331,70 @@ def _batch_add_mil_items(auditItemId, lob, site, productLine, project, part, typ
         batch.append(item)
     if len(batch) > 0:
         MILItem.objects.bulk_create(batch, batch_size=len(batch))
+def _add_mil_score(auditItemId, lob, site, productLine, project, part, type, createTime, findings):
+    auditType = None
+    if type == 'Module' or type == 'Enclosure':
+        auditType = 'Process'
+    elif type == 'ORT':
+        auditType = 'ORT'
+    year = createTime.year
+    month = createTime.month
+    week = int(createTime.strftime("%W")) + 1
+    day = createTime.day
+    quarter = None
+    if month < 4:
+        quarter = 1
+    elif month < 7:
+        quarter = 2
+    elif month < 10:
+        quarter = 3
+    else:
+        quarter = 4
+    critical_total = 0
+    major_total = 0
+    minor_total = 0
+    for e in findings:
+        severity = value.safe_get_in_key(e, 'severity', '')
+        if severity == 'Critical':
+            critical_total += 1
+        elif severity == 'Major':
+            major_total += 1
+        elif severity == 'Minor':
+            minor_total += 1
+    score = 100 - critical_total * 20 - major_total * 5 - minor_total * 2
+    range = None
+    if score >= 90:
+        range = 1
+    elif score >= 85:
+        range = 2
+    else:
+        range = 3
+    entry = MILScoreItem(
+        auditItemId=auditItemId,
+        lob=lob,
+        site=site,
+        productLine=productLine,
+        project=project,
+        part=part,
+        type=type,
+        year=year,
+        month=month,
+        week=week,
+        day=day,
+        quarter=quarter,
+        vendor=site,
+        auditType=auditType,
+        score=score,
+        range=range,
+    )
+    entry.save()
+
+
+
+
+
+
+
+
+
 

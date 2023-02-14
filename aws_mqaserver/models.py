@@ -436,6 +436,7 @@ class MILItem(models.Model):
     week = models.SmallIntegerField('week', null=False)
     day = models.SmallIntegerField('day', null=False)
     quarter = models.SmallIntegerField('quarter', null=False)
+    auditType = models.CharField('auditType', null=False, max_length=99)
     vendor = models.CharField('vendor', null=False, max_length=50)
     factory = models.CharField('factory', null=False, max_length=50)
     projectPart = models.CharField('projectPart', null=False, max_length=50)
@@ -503,6 +504,27 @@ class MILItem(models.Model):
     class Meta:
         db_table = 't_sa_mil_item'
 
+class MILScoreItem(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True)
+    auditItemId = models.BigIntegerField('auditItemId', null=True)
+    lob = models.CharField('lob', null=False, max_length=50)
+    site = models.CharField('site', null=False, max_length=50)
+    productLine = models.CharField('productLine', null=False, max_length=50)
+    project = models.CharField('project', null=False, max_length=50)
+    part = models.CharField('part', null=False, max_length=50)
+    type = models.CharField('type', null=False, max_length=50)
+    year = models.SmallIntegerField('year', null=False)
+    month = models.SmallIntegerField('month', null=False)
+    week = models.SmallIntegerField('week', null=False)
+    day = models.SmallIntegerField('day', null=False)
+    quarter = models.SmallIntegerField('quarter', null=False)
+    vendor = models.CharField('vendor', null=False, max_length=50)
+    auditType = models.CharField('auditType', null=False, max_length=99)
+    score = models.FloatField('score', null=False)
+    range = models.FloatField('range', null=False)
+    class Meta:
+        db_table = 't_sa_mil_score_item'
+
 class Visit(models.Model):
     visitId = models.AutoField('id', primary_key=True)
     lob = models.CharField('lob', max_length=50)
@@ -518,7 +540,6 @@ class Visit(models.Model):
     video = models.CharField('视频文件夹路径', max_length=150)
     record = models.CharField('record文件夹路径', max_length=150)
     mil = models.CharField('mil文件夹路径', max_length=150)
-
     class Meta:
         db_table = 'Visit'
 
