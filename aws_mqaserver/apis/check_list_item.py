@@ -128,7 +128,7 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
             disScore = value.safe_get_in_key(e, 'DIS Score')
             disTimes = value.safe_get_in_key(e, 'Times')
-            skip = value.safe_get_in_key(e, 'Skip')
+            skip = value.safe_get_bool_in_key(e, 'Skip')
             item = CheckListItemModule(
                 checkListId=checkListId,
                 sn=sn,
@@ -173,7 +173,7 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
             disScore = value.safe_get_in_key(e, 'DIS Score')
             disTimes = value.safe_get_in_key(e, 'Times')
-            skip = value.safe_get_in_key(e, 'Skip')
+            skip = value.safe_get_bool_in_key(e, 'Skip')
             item = CheckListItemEnclosure(
                 checkListId=checkListId,
                 sn=sn,
@@ -212,7 +212,7 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             result = value.safe_get_in_key(e, 'Result (Verify Vendors execution)OK/NG', '')
             disScore = value.safe_get_in_key(e, 'DIS Score')
             disTimes = value.safe_get_in_key(e, 'Times')
-            skip = value.safe_get_in_key(e, 'Skip')
+            skip = value.safe_get_bool_in_key(e, 'Skip')
             item = CheckListItemORT(
                 checkListId=checkListId,
                 sn=sn,

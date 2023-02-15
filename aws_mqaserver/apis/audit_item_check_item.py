@@ -91,7 +91,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
             checkItem_auditSampleSize = value.safe_get_in_key(check_item, 'auditSampleSize', '')
             checkItem_disScore = value.safe_get_in_key(check_item, 'disScore')
             checkItem_disTimes = value.safe_get_in_key(check_item, 'disTimes')
-            checkItem_skip = value.safe_get_in_key(check_item, 'skip')
+            checkItem_skip = value.safe_get_bool_in_key(check_item, 'skip')
             peopleTrain = value.safe_get_in_key(e, 'peopleTrain')
             machineMaintenance = value.safe_get_in_key(e, 'machineMaintenance')
             onsiteVerify = value.safe_get_in_key(e, 'onsiteVerify')
@@ -174,7 +174,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
             checkItem_auditSampleSize = value.safe_get_in_key(check_item, 'auditSampleSize', '')
             checkItem_disScore = value.safe_get_in_key(check_item, 'disScore')
             checkItem_disTimes = value.safe_get_in_key(check_item, 'disTimes')
-            checkItem_skip = value.safe_get_in_key(check_item, 'skip')
+            checkItem_skip = value.safe_get_bool_in_key(check_item, 'skip')
             records = value.safe_get_in_key(e, 'records')
             result = value.safe_get_in_key(e, 'result')
             findings_json = None
@@ -242,7 +242,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
             checkItem_OCAP = value.safe_get_in_key(check_item, 'OCAP')
             checkItem_disScore = value.safe_get_in_key(check_item, 'disScore')
             checkItem_disTimes = value.safe_get_in_key(check_item, 'disTimes')
-            checkItem_skip = value.safe_get_in_key(check_item, 'skip')
+            checkItem_skip = value.safe_get_bool_in_key(check_item, 'skip')
             result = value.safe_get_in_key(e, 'result')
             findings_json = None
             findings = value.safe_get_in_key(e, 'findings')

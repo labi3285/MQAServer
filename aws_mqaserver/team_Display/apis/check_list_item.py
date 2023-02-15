@@ -86,7 +86,7 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
         auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
         disScore = value.safe_get_in_key(e, 'DIS Score')
         disTimes = value.safe_get_in_key(e, 'Times')
-        skip = value.safe_get_in_key(e, 'Skip')
+        skip = value.safe_get_bool_in_key(e, 'Skip')
         item = DisplayCheckListItemEnclosure(
             checkListId=checkListId,
             sn=sn,

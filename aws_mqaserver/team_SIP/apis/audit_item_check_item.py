@@ -75,7 +75,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
             checkItem_auditSampleSize = value.safe_get_in_key(check_item, 'auditSampleSize', '')
             checkItem_disScore = value.safe_get_in_key(check_item, 'disScore')
             checkItem_disTimes = value.safe_get_in_key(check_item, 'disTimes')
-            checkItem_skip = value.safe_get_in_key(check_item, 'skip')
+            checkItem_skip = value.safe_get_bool_in_key(check_item, 'skip')
             records = value.safe_get_in_key(e, 'records')
             result = value.safe_get_in_key(e, 'result')
             findings_json = None

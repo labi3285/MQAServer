@@ -18,13 +18,13 @@ def safe_get_in_key(obj, key, placeholder=None):
 
 def safe_get_bool_in_key(params, key, placeholder=None):
     val = safe_get_in_key(params, key)
-    if val == None:
+    if val == None or val == '':
         return placeholder
     if isinstance(val, bool):
         return val
     try:
         if isinstance(val, str):
-            if val == '0' or val == 'False' or val == 'No' or val == 'FALSE' or val == 'No':
+            if val == '0' or val == 'False' or val == 'FALSE' or val == 'No' or val == 'NO' or val == 'N':
                 return False
         i = bool(val)
         return i
@@ -33,7 +33,7 @@ def safe_get_bool_in_key(params, key, placeholder=None):
 
 def safe_get_float_in_key(params, key, min=None, max=None, placeholder=None):
     val = safe_get_in_key(params, key)
-    if val == None:
+    if val == None or val == '':
         return placeholder
     try:
         i = float(val)
