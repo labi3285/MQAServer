@@ -115,7 +115,6 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             LCL = value.safe_get_in_key(e, 'LCL (optional)', '')
             UCL = value.safe_get_in_key(e, 'UCL (optional)', '')
             checkItem = value.safe_get_in_key(e, 'Characteristic (Check item)', '')
-            checkResult = value.safe_get_in_key(e, 'Result (Record check result)', '')
             sampleUnit = value.safe_get_in_key(e, 'Sample Unit', '')
             sampleSize = value.safe_get_in_key(e, 'Sample Size', '')
             frenquencyBasis = value.safe_get_in_key(e, 'Frenquency/Basis', '')
@@ -124,7 +123,6 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             controlCriteria = value.safe_get_in_key(e, 'Control Criteria', '')
             responsePlan = value.safe_get_in_key(e, 'Response plan', '')
             sopNo = value.safe_get_in_key(e, 'SOP-NO.', '')
-            result = value.safe_get_in_key(e, 'Result (Verify Vendors execution)OK/NG', '')
             auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
             disScore = value.safe_get_in_key(e, 'DIS Score')
             disTimes = value.safe_get_in_key(e, 'Times')
@@ -141,7 +139,6 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
                 LCL=LCL,
                 UCL=UCL,
                 checkItem=checkItem,
-                checkResult=checkResult,
                 sampleUnit=sampleUnit,
                 sampleSize=sampleSize,
                 frenquencyBasis=frenquencyBasis,
@@ -150,7 +147,6 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
                 controlCriteria=controlCriteria,
                 responsePlan=responsePlan,
                 sopNo=sopNo,
-                result=result,
                 auditSampleSize=auditSampleSize,
                 disScore=disScore,
                 disTimes=disTimes,

@@ -92,6 +92,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
             checkItem_disScore = value.safe_get_in_key(check_item, 'disScore')
             checkItem_disTimes = value.safe_get_in_key(check_item, 'disTimes')
             checkItem_skip = value.safe_get_bool_in_key(check_item, 'skip')
+            checkResult = value.safe_get_in_key(e, 'checkResult')
             peopleTrain = value.safe_get_in_key(e, 'peopleTrain')
             machineMaintenance = value.safe_get_in_key(e, 'machineMaintenance')
             onsiteVerify = value.safe_get_in_key(e, 'onsiteVerify')
@@ -144,6 +145,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
                 materialHandling=materialHandling,
                 environmentSetting=environmentSetting,
                 workshopLineMachine=workshopLineMachine,
+                checkResult=checkResult,
                 result=result,
                 hasFindings=hasFindings,
                 findings=findings_json,
