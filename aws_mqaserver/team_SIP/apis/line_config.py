@@ -41,10 +41,7 @@ def update_line_config(request):
     if site != None and lob == None:
         return response.ResponseError('Params Error')
     if operator.role != 'super_admin' and operator.role != 'admin':
-        # only lob_dri and admin can add line
-        if operator.role != 'lob_dri':
-            return response.ResponseError('Operation Forbidden')
-        # lob_dri can only add lob sub line
+        # lob can only add lob sub line
         if site != None and not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     if id == None:
@@ -149,8 +146,6 @@ def delete_line_config_item(request):
         traceback.print_exc()
         return response.ResponseError('System Error')
     if operator.role != 'super_admin' and operator.role != 'admin':
-        if operator.role != 'lob_dri':
-            return response.ResponseError('Operation Forbidden')
         if not ids.contains_id(entry.lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # delete
@@ -172,8 +167,6 @@ def get_line_configs_page(request):
     project = value.safe_get_in_key(params, 'project')
     part = value.safe_get_in_key(params, 'part')
     domain = value.safe_get_in_key(params, 'domain')
-    if operator.role != 'super_admin' and operator.role != 'admin' and not ids.contains_id(lob, operator.lob):
-        return response.ResponseError('Operation Forbidden')
     if part != None:
         if project == None:
             return response.ResponseError('Params Error')

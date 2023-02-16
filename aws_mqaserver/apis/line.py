@@ -41,10 +41,7 @@ def add_line(request):
     if productLine != None and site == None:
         return response.ResponseError('Params Error')
     if operator.role != 'super_admin' and operator.role != 'admin':
-        # only lob_dri and admin can add line
-        if operator.role != 'lob_dri':
-            return response.ResponseError('Operation Forbidden')
-        # lob_dri can only add lob sub line
+        # lob can only add lob sub line
         if site != None and not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # check duplicate name
@@ -83,10 +80,7 @@ def delete_line(request):
         # only admin can delete top level
         if line.site == None:
             return response.ResponseError('Operation Forbidden')
-        # only lob_dri and admin can delete line
-        if operator.role != 'lob_dri':
-            return response.ResponseError('Operation Forbidden') 
-        # lob_dri can only delete lob sub line
+        # lob can only delete lob sub line
         if not ids.contains_id(line.lob, operator.lob):
             return response.ResponseError('Operation Forbidden') 
     # delete line

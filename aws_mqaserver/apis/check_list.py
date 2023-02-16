@@ -120,8 +120,6 @@ def get_check_lists_page(request):
 # Delete Check List
 def delete_check_list(request):
     operator = validator.checkout_token_user(request)
-    if operator.role != 'admin' and operator.role != 'lob_dri':
-        return response.ResponseError('Operation Forbidden')
     params = json.loads(request.body.decode())
     id = validator.validate_not_empty(params, 'id')
     entry = None
@@ -133,7 +131,6 @@ def delete_check_list(request):
         traceback.print_exc()
         return response.ResponseError('System Error')
     if operator.role != 'super_admin' and operator.role != 'admin':
-        # lob_dri can only delete check list in his lob
         if not ids.contains_id(lob, operator.lob):
             return response.ResponseError('Operation Forbidden')
     # delete
