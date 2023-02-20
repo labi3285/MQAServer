@@ -298,13 +298,11 @@ def upload_audit_item(request):
     entry.save()
     if audit_items != None and len(audit_items) > 0:
         audit_item_check_item._batch_add_check_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, audit_items)
-    mil_item._add_mil_score(entry.id, lob, site, productLine, project, part, type, endTime, all_findings)
     if all_findings != None and len(all_findings) > 0:
         mil_item._batch_add_mil_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, all_findings)
         return response.ResponseData({
             'id': entry.id
         })
-    else:
-        return response.ResponseData({
-            'id': entry.id
-        })
+    return response.ResponseData({
+        'id': entry.id
+    })

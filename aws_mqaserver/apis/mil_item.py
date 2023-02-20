@@ -83,7 +83,7 @@ def update_mil_item(request):
     programRelated = value.safe_get_in_key(params, 'programRelated')
     FA = value.safe_get_in_key(params, 'FA')
     CA = value.safe_get_in_key(params, 'CA')
-    MILDescription = value.safe_get_in_key(params, 'MILDescription')
+    entry = None
     if id == None:
         entry = MILItem(
             lob=lob,
@@ -122,13 +122,11 @@ def update_mil_item(request):
             vendorDRI=vendorDRI,
             FA=FA,
             CA=CA,
-            MILDescription=MILDescription,
             createTime=createTime,
             auditorId=operator.id,
             auditor=operator.name,
         )
         entry.save()
-        return response.ResponseData('Add Success')
     else:
         entry = MILItem.objects.get(id=id)
         # entry.lob = lob
@@ -167,10 +165,10 @@ def update_mil_item(request):
         entry.vendorDRI = vendorDRI
         entry.FA=FA
         entry.CA = CA
-        entry.MILDescription=MILDescription
         entry.updateTime = datetime.datetime.now()
         entry.save()
-        return response.ResponseData('Update Success')
+    _update_mil_score(entry.lob, entry.site, entry.productLine, entry.project, entry.part, entry.type, entry.auditType, entry.year, entry.month)
+    return response.ResponseData('Update Success')
 
 # Get MIL Items Page
 def get_mil_items_page(request):
@@ -256,6 +254,7 @@ def delete_mil_item(request):
     # delete
     try:
         entry.delete()
+        _update_mil_score(entry.lob, entry.site, entry.productLine, entry.project, entry.part, entry.type, entry.auditType, entry.year, entry.month)
         return response.ResponseData('Deleted')        
     except Exception:
         traceback.print_exc()
@@ -341,17 +340,15 @@ def _batch_add_mil_items(auditItemId, lob, site, productLine, project, part, typ
         batch.append(item)
     if len(batch) > 0:
         MILItem.objects.bulk_create(batch, batch_size=len(batch))
-def _add_mil_score(auditItemId, lob, site, productLine, project, part, type, createTime, findings):
-    auditType = None
-    if type == 'Module' or type == 'Enclosure':
-        auditType = 'Process'
-    elif type == 'ORT':
-        auditType = 'ORT'
-    year = createTime.year
-    month = createTime.month
-    week = int(createTime.strftime("%W")) + 1
-    day = createTime.day
-    quarter = None
+    _update_mil_score(lob, site, productLine, project, part, type, auditType, year, month)
+
+
+def _update_mil_score(lob, site, productLine, project, part, type, auditType, year, month):
+    if auditType == None:
+        if type == 'Module' or type == 'Enclosure':
+            auditType = 'Process'
+        elif type == 'ORT':
+            auditType = 'ORT'
     if month < 4:
         quarter = 1
     elif month < 7:
@@ -360,16 +357,16 @@ def _add_mil_score(auditItemId, lob, site, productLine, project, part, type, cre
         quarter = 3
     else:
         quarter = 4
+    list = MILItem.objects.all().filter(lob=lob, site=site, productLine=productLine, project=project, auditType=auditType, year=year, month=month)
     critical_total = 0
     major_total = 0
     minor_total = 0
-    for e in findings:
-        severity = value.safe_get_in_key(e, 'severity', '')
-        if severity == 'Critical':
+    for item in list:
+        if item.severity == 'Critical':
             critical_total += 1
-        elif severity == 'Major':
+        elif item.severity == 'Major':
             major_total += 1
-        elif severity == 'Minor':
+        elif item.severity == 'Minor':
             minor_total += 1
     score = 100 - critical_total * 20 - major_total * 5 - minor_total * 2
     range = None
@@ -379,25 +376,31 @@ def _add_mil_score(auditItemId, lob, site, productLine, project, part, type, cre
         range = 2
     else:
         range = 3
-    entry = MILScoreItem(
-        auditItemId=auditItemId,
-        lob=lob,
-        site=site,
-        productLine=productLine,
-        project=project,
-        part=part,
-        type=type,
-        year=year,
-        month=month,
-        week=week,
-        day=day,
-        quarter=quarter,
-        vendor=site,
-        auditType=auditType,
-        score=score,
-        range=range,
-    )
-    entry.save()
+    try:
+        entry = MILScoreItem.objects.get(lob=lob, site=site, productLine=productLine, project=project, year=year, month=month)
+        entry.score = score
+        entry.range = range
+        entry.save()
+    except MILScoreItem.DoesNotExist:
+        entry = MILScoreItem(
+            lob=lob,
+            site=site,
+            productLine=productLine,
+            project=project,
+            type=type,
+            year=year,
+            month=month,
+            quarter=quarter,
+            vendor=site,
+            auditType=auditType,
+            score=score,
+            range=range,
+        )
+        entry.save()
+    except Exception as e:
+        traceback.print_exc()
+        raise e
+
 
 
 

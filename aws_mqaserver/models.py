@@ -499,23 +499,18 @@ class MILItem(models.Model):
     createTime = models.DateTimeField(null=True)
     FA = models.CharField('FA', null=True, max_length=500)
     CA = models.CharField('CA', null=True, max_length=500)
-    MILDescription = models.CharField('MILDescription', null=True, max_length=500)
     class Meta:
         db_table = 't_sa_mil_item'
 
 class MILScoreItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    auditItemId = models.BigIntegerField('auditItemId', null=True)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
     project = models.CharField('project', null=False, max_length=50)
-    part = models.CharField('part', null=False, max_length=50)
     type = models.CharField('type', null=False, max_length=50)
     year = models.SmallIntegerField('year', null=False)
     month = models.SmallIntegerField('month', null=False)
-    week = models.SmallIntegerField('week', null=False)
-    day = models.SmallIntegerField('day', null=False)
     quarter = models.SmallIntegerField('quarter', null=False)
     vendor = models.CharField('vendor', null=False, max_length=50)
     auditType = models.CharField('auditType', null=False, max_length=99)
