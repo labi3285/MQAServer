@@ -20,7 +20,12 @@ def get_ids(format_ids):
 def contains_id(id, format_ids):
     if id == None or format_ids == None:
         return False
-    return operator.contains(format_ids, '/' + id + '/')
+    t = id
+    if not t.startswith('/'):
+        t = '/' + t
+    if not t.endswith('/'):
+        t = t + '/'
+    return operator.contains(format_ids, t)
 
 def contains_ids(fids, format_ids):
     ids = get_ids(fids)

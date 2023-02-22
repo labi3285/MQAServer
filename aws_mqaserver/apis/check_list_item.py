@@ -8,12 +8,15 @@ import logging
 from django.conf import settings
 import datetime
 import traceback
+import math
 
 from aws_mqaserver.utils import value
 from aws_mqaserver.utils import validator
 from aws_mqaserver.utils import response
 from aws_mqaserver.utils import token
 from aws_mqaserver.utils import ids
+
+from aws_mqaserver.utils import audit
 
 from aws_mqaserver.models import CheckType
 from aws_mqaserver.models import CheckListItemModule
@@ -124,7 +127,10 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             responsePlan = value.safe_get_in_key(e, 'Response plan', '')
             sopNo = value.safe_get_in_key(e, 'SOP-NO.', '')
             auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
-            disScore = value.safe_get_in_key(e, 'DIS Score')
+            disScore = value.safe_get_float_in_key(e, 'DIS Score')
+            if disScore != None:
+                disScore = int(math.ceil(disScore))
+            realSampleSize = audit.get_real_sample_size(sampleSize, disScore)
             disTimes = value.safe_get_in_key(e, 'Times')
             skip = value.safe_get_bool_in_key(e, 'Skip')
             item = CheckListItemModule(
@@ -141,6 +147,7 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
                 checkItem=checkItem,
                 sampleUnit=sampleUnit,
                 sampleSize=sampleSize,
+                realSampleSize=realSampleSize,
                 frenquencyBasis=frenquencyBasis,
                 controlType=controlType,
                 controlMethod=controlMethod,
@@ -167,7 +174,10 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             recordsFindings = value.safe_get_in_key(e, ['Records Findings', 'Records/Findings'], '')
             result = value.safe_get_in_key(e, 'Result', '')
             auditSampleSize = value.safe_get_in_key(e, 'Audit Sample Size', '')
-            disScore = value.safe_get_in_key(e, 'DIS Score')
+            disScore = value.safe_get_float_in_key(e, 'DIS Score')
+            if disScore != None:
+                disScore = int(math.ceil(disScore))
+            realSampleSize = audit.get_real_sample_size(samplingSize, disScore)
             disTimes = value.safe_get_in_key(e, 'Times')
             skip = value.safe_get_bool_in_key(e, 'Skip')
             item = CheckListItemEnclosure(
@@ -178,6 +188,7 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
                 subProcess=subProcess,
                 checkItems=checkItems,
                 samplingSize=samplingSize,
+                realSampleSize=realSampleSize,
                 lookingFor=lookingFor,
                 recordsFindings=recordsFindings,
                 result=result,
@@ -206,7 +217,9 @@ def _batch_add_check_list_items(checkListId, type, dicArr):
             passFailCriteria = value.safe_get_in_key(e, 'Pass/Fail Criteria', '')
             OCAP = value.safe_get_in_key(e, 'OCAP', '')
             result = value.safe_get_in_key(e, 'Result (Verify Vendors execution)OK/NG', '')
-            disScore = value.safe_get_in_key(e, 'DIS Score')
+            disScore = value.safe_get_float_in_key(e, 'DIS Score')
+            if disScore != None:
+                disScore = int(math.ceil(disScore))
             disTimes = value.safe_get_in_key(e, 'Times')
             skip = value.safe_get_bool_in_key(e, 'Skip')
             item = CheckListItemORT(
