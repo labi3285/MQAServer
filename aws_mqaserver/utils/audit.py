@@ -47,6 +47,7 @@ def get_real_sample_size(text, dis_score):
         return text
     p = re.compile('\d{1,9}\.{0,1}\d{0,4}')
     t = ''
+    text = str(text)
     arr = []
     for a in p.finditer(text):
         arr.append(a)
