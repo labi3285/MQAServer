@@ -41,7 +41,6 @@ def get_real_sample_size1(text, dis_score):
     return t
 
 def get_real_sample_size(text, dis_score):
-    return text
     if dis_score == None:
         return text
     if text == None or text == '':
