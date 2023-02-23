@@ -25,6 +25,8 @@ from aws_mqaserver.views import upload_image_video
 from aws_mqaserver.views import upload_mil_to_tableau
 # from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token
 
+import aws_mqaserver.apis.test
+
 import aws_mqaserver.apis.user
 import aws_mqaserver.apis.line
 import aws_mqaserver.apis.line_config
@@ -62,6 +64,8 @@ import aws_mqaserver.team_SIP.apis.audit_item
 import aws_mqaserver.team_SIP.apis.mil_item
 
 urlpatterns = [
+
+    path('test', aws_mqaserver.apis.test.test),
 
     path('login', aws_mqaserver.apis.user.login),
     path('add_user', aws_mqaserver.apis.user.add_user),

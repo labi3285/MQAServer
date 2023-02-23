@@ -3,6 +3,7 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import transaction
 from django.core.paginator import Paginator
+import math
 
 import pandas
 from django.core.files import temp as tempfile
@@ -49,25 +50,29 @@ def upload_audit_item(request):
     uploadTime = datetime.datetime.now()
     if auditor == None:
         auditor = operator.name
-    passCount = 0
-    doneCount = 0
+    okCount = 0
     ngCount = 0
-    totalCount = 0
+    naCount = 0
+    allCount = 0
     audit_items = []
     if rawJson != None and rawJson != '':
         audit_items = json.loads(rawJson)
         for e in audit_items:
-            totalCount += 1
+            allCount += 1
             status = value.safe_get_in_key(e, 'status')
             if status != None:
-                doneCount += 1
                 if status == 'NG':
                     ngCount += 1
                 elif status == 'OK':
-                    passCount += 1
+                    okCount += 1
+                elif status == 'NA':
+                    naCount += 1
 
+    score = 100
+    if allCount > 0:
+        score = int((1 - float((ngCount + naCount) * 2) / float(allCount)) * 100)
     entry = MDEAuditItem(lob=lob, site=site, productLine=productLine, project=project, part=part,
-                         beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, passCount=passCount, ngCount=ngCount, doneCount=doneCount, totalCount=totalCount, createTime=datetime.datetime.now(),
+                         beginTime=beginTime, endTime=endTime, uploadTime=uploadTime, okCount=okCount, ngCount=ngCount, naCount=naCount, allCount=allCount, score=score, createTime=datetime.datetime.now(),
                          auditorId=operator.id, auditor=auditor)
     entry.save()
     if audit_items != None and len(audit_items) > 0:

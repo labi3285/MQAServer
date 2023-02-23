@@ -65,7 +65,9 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, a
         checkItem_checkItem = value.safe_get_in_key(e, 'checkItem', '')
         checkItem_LSL = value.safe_get_in_key(e, 'LSL', 0)
         checkItem_USL = value.safe_get_in_key(e, 'USL', 0)
-        _value = value.safe_get_float_in_key(e, 'value')
+        _value = value.safe_get_in_key(e, 'value')
+        if _value != None:
+            _value = str(_value)
         status = value.safe_get_in_key(e, 'status')
         createTime = value.safe_get_date_in_key(e, 'createTime')
         item = MDEAuditItemCheckItem(

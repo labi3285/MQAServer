@@ -57,10 +57,11 @@ class MDEAuditItem(models.Model):
     createTime = models.DateTimeField(null=True)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
-    passCount = models.IntegerField('passCount', null=False)
-    ngCount = models.IntegerField('failCount', null=False)
-    doneCount = models.IntegerField('doneCount', null=False)
-    totalCount = models.IntegerField('totalCount', null=False)
+    okCount = models.IntegerField('okCount', null=False)
+    ngCount = models.IntegerField('ngCount', null=False)
+    naCount = models.IntegerField('naCount', null=False)
+    allCount = models.IntegerField('allCount', null=False)
+    score = models.IntegerField('score', null=False)
     class Meta:
         db_table = 't_mde_audit_item'
 
@@ -81,7 +82,7 @@ class MDEAuditItemCheckItem(models.Model):
     checkItem_checkItem = models.CharField('Check Item', null=False, max_length=999)
     checkItem_USL = models.FloatField('USL', null=False)
     checkItem_LSL = models.FloatField('LSL', null=False)
-    value = models.FloatField('Value', null=True)
+    value = models.CharField('Value', null=True, max_length=30)
     status = models.CharField('status', null=True, max_length=50)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     createTime = models.DateTimeField(null=True)

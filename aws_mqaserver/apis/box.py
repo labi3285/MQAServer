@@ -35,7 +35,6 @@ def _store_tokens(access_token, refresh_token):
     # Use keyring to store the tokens
     keyring.set_password('Box_Auth', BOX_ACCOUNT, access_token)
     keyring.set_password('Box_Refresh', BOX_ACCOUNT, refresh_token)
-    print('store')
 
 def _check_or_setup_box():
     global global_client
@@ -51,7 +50,6 @@ def _check_or_setup_box():
     )
     global_client = Client(oauth)
     current_user = global_client.user(user_id='me').get()
-    print('[box] setup, user:', current_user.name)
 
 def _create_folder(parent_id, folder_name):
     global global_client
