@@ -39,8 +39,8 @@ class MDECheckListItem(models.Model):
     project = models.CharField('Project', null=False, max_length=99)
     part = models.CharField('Part', null=False, max_length=99)
     checkItem = models.CharField('Check Item', null=False, max_length=999)
-    USL = models.FloatField('USL', null=False)
-    LSL = models.FloatField('LSL', null=False)
+    USL = models.CharField('USL', null=False, max_length=99)
+    LSL = models.CharField('LSL', null=False, max_length=99)
     class Meta:
         db_table = 't_mde_check_list_item'
 
@@ -80,8 +80,8 @@ class MDEAuditItemCheckItem(models.Model):
     checkItem_productLine = models.CharField('Product line', null=False, max_length=99)
     checkItem_project = models.CharField('Project', null=False, max_length=99)
     checkItem_checkItem = models.CharField('Check Item', null=False, max_length=999)
-    checkItem_USL = models.FloatField('USL', null=False)
-    checkItem_LSL = models.FloatField('LSL', null=False)
+    checkItem_USL = models.CharField('USL', null=False, max_length=99)
+    checkItem_LSL = models.CharField('LSL', null=False, max_length=99)
     value = models.CharField('Value', null=True, max_length=30)
     status = models.CharField('status', null=True, max_length=50)
     uploadTime = models.DateTimeField('uploadTime', null=False)
