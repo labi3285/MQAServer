@@ -111,18 +111,18 @@ def upload_kappa_item(request):
     entry.save()
     if type == ObserveType.Cosmetic:
         kappa_item_score_loss_item._batch_add_score_loss_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, [
-            { 'breakDown': 'Kappa Failure Rate', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'kappaFailureRate') },
-            { 'breakDown': 'Sample Condition', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'sampleCondition') },
-            { 'breakDown': 'Kappa Record', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'kappaRecord') },
-            { 'breakDown': 'Audit Support', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'auditSupport') },
+            { 'item': 'A', 'breakDown': 'Kappa Failure Rate', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'kappaFailureRate') },
+            { 'item': 'B', 'breakDown': 'Sample Condition', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'sampleCondition') },
+            { 'item': 'C', 'breakDown': 'Kappa Record', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'kappaRecord') },
+            { 'item': 'D', 'breakDown': 'Audit Support', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'auditSupport') },
         ])
     elif type == ObserveType.Surface:
         kappa_item_score_loss_item._batch_add_score_loss_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, [
-            { 'breakDown': 'Method', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'method') },
-            { 'breakDown': 'Equipment Fixture', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'equipmentFixture') },
-            { 'breakDown': 'Audit Support', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'auditSupport') },
-            { 'breakDown': 'Part Quality', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'partQuality') },
-            { 'breakDown': 'Critical Issues', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'criticalIssues') },
+            { 'item': 'A', 'breakDown': 'Method', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'method') },
+            { 'item': 'B', 'breakDown': 'Equipment Fixture', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'equipmentFixture') },
+            { 'item': 'C', 'breakDown': 'Audit Support', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'auditSupport') },
+            { 'item': 'D', 'breakDown': 'Part Quality', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'partQuality') },
+            { 'item': 'E', 'breakDown': 'Critical Issues', 'scoreLoss': value.safe_get_in_key(scoreLossInfo, 'criticalIssues') },
         ])
     if kappa_item_kappa_skill_score_items != None and len(kappa_item_kappa_skill_score_items) > 0:
         kappa_item_kappa_skill_score_item._batch_add_score_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, kappa_item_kappa_skill_score_items)

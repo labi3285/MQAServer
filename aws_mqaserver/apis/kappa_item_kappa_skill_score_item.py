@@ -27,7 +27,7 @@ import json
 
 logger = logging.getLogger('django')
 
-def _batch_add_score_items(obaItemId, lob, site, productLine, project, part, type, year, auditorId, auditor, createTime, dicArr):
+def _batch_add_score_items(kappaItemId, lob, site, productLine, project, part, type, year, auditorId, auditor, createTime, dicArr):
     batch = []
     for e in dicArr:
         name = value.safe_get_in_key(e, 'name', '')
@@ -35,7 +35,7 @@ def _batch_add_score_items(obaItemId, lob, site, productLine, project, part, typ
         score = value.safe_get_in_key(e, 'score', 0)
         judgement = value.safe_get_in_key(e, 'judgement', '')
         item = KAPPAItemKappaSkillScoreItem(
-            obaItemId=obaItemId,
+            kappaItemId=kappaItemId,
             lob=lob,
             site=site,
             productLine=productLine,

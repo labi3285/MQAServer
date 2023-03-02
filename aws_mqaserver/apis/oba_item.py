@@ -75,7 +75,6 @@ def upload_oba_item(request):
             item['month'] = month
             item['quarter'] = quarter
 
-
     # audit_type_name = 'OBA'
     # if type == ObserveType.Cosmetic:
     #     audit_type_name = 'OBA Cosmetic'
@@ -149,10 +148,10 @@ def upload_oba_item(request):
                     auditorId=operator.id, auditor=auditor)
     entry.save()
     oba_item_score_loss_item._batch_add_score_loss_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, [
-        { 'breakDown': 'Part Quality', 'scoreLoss': scoreLoss_partQuality },
-        { 'breakDown': 'Preparation', 'scoreLoss': scoreLoss_preparation },
-        { 'breakDown': 'Audit Support', 'scoreLoss': scoreLoss_auditSupport },
-        { 'breakDown': 'Critical Issues', 'scoreLoss': scoreLoss_criticalIssues },
+        { 'item': 'A', 'breakDown': 'Part Quality', 'scoreLoss': scoreLoss_partQuality },
+        { 'item': 'B', 'breakDown': 'Preparation', 'scoreLoss': scoreLoss_preparation },
+        { 'item': 'C', 'breakDown': 'Audit Support', 'scoreLoss': scoreLoss_auditSupport },
+        { 'item': 'D', 'breakDown': 'Critical Issues', 'scoreLoss': scoreLoss_criticalIssues },
     ])
     if findings_items != None and len(findings_items) > 0:
         oba_item_mil_item._batch_add_mil_items(entry.id, lob, site, productLine, project, part, type, year, operator.id, auditor, createTime, findings_items)

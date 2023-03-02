@@ -30,9 +30,10 @@ logger = logging.getLogger('django')
 def _batch_add_score_loss_items(obaItemId, lob, site, productLine, project, part, type, year, auditorId, auditor, createTime, dicArr):
     batch = []
     for e in dicArr:
+        item = value.safe_get_in_key(e, 'item', '')
         breakDown = value.safe_get_in_key(e, 'breakDown', '')
         scoreLoss = value.safe_get_in_key(e, 'scoreLoss', '')
-        item = OBAItemScoreLossItem(
+        entry = OBAItemScoreLossItem(
             obaItemId=obaItemId,
             lob=lob,
             site=site,
@@ -41,13 +42,14 @@ def _batch_add_score_loss_items(obaItemId, lob, site, productLine, project, part
             part=part,
             type=type,
             year=year,
+            item=item,
             breakDown=breakDown,
             scoreLoss=scoreLoss,
             createTime=createTime,
             auditorId=auditorId,
             auditor=auditor,
         )
-        batch.append(item)
+        batch.append(entry)
     if len(batch) > 0:
         OBAItemScoreLossItem.objects.bulk_create(batch, batch_size=len(batch))
 

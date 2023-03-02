@@ -323,7 +323,7 @@ class KAPPAItem(models.Model):
 
 class KAPPAItemScoreLossItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    obaItemId = models.BigIntegerField(null=True)
+    kappaItemId = models.BigIntegerField(null=True)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
@@ -331,6 +331,7 @@ class KAPPAItemScoreLossItem(models.Model):
     part = models.CharField('part', null=False, max_length=50)
     type = models.CharField('type', null=False, max_length=50)
     year = models.SmallIntegerField('year', null=False)
+    item = models.CharField('item', null=False, max_length=30)
     breakDown = models.CharField('breakDown', null=False, max_length=255)
     scoreLoss = models.FloatField('scoreLoss', null=False)
     createTime = models.DateTimeField(null=True)
@@ -341,7 +342,7 @@ class KAPPAItemScoreLossItem(models.Model):
 
 class KAPPAItemKappaSkillScoreItem(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True)
-    obaItemId = models.BigIntegerField(null=True)
+    kappaItemId = models.BigIntegerField(null=True)
     lob = models.CharField('lob', null=False, max_length=50)
     site = models.CharField('site', null=False, max_length=50)
     productLine = models.CharField('productLine', null=False, max_length=50)
@@ -392,6 +393,7 @@ class OBAItemScoreLossItem(models.Model):
     part = models.CharField('part', null=False, max_length=50)
     type = models.CharField('type', null=False, max_length=50)
     year = models.SmallIntegerField('year', null=False)
+    item = models.CharField('item', null=False, max_length=30)
     breakDown = models.CharField('breakDown', null=False, max_length=255)
     scoreLoss = models.FloatField('scoreLoss', null=False)
     createTime = models.DateTimeField(null=True)
