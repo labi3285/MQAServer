@@ -13,6 +13,12 @@ def HttpResponseJson(payload):
     response["Access-Control-Allow-Origin"] = "*"
     return response
 
+def HttpResponseExcel(payload, excel_name):
+    response = HttpResponse(content_type="application/vnd.ms-excel")
+    response['Content-Disposition'] = 'attachment;filename=' + excel_name
+    response.write(payload)
+    return response
+
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):

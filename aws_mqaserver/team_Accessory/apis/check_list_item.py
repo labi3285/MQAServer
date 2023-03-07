@@ -3,6 +3,10 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import models
 
+from io import BytesIO
+import pandas
+from django.core.files import temp as tempfile
+
 from django.core.paginator import Paginator
 import logging
 from django.conf import settings
@@ -16,6 +20,7 @@ from aws_mqaserver.utils import token
 from aws_mqaserver.utils import ids
 
 from aws_mqaserver.team_Accessory.models import AccessoryCheckType
+from aws_mqaserver.team_Accessory.models import AccessoryCheckList
 from aws_mqaserver.team_Accessory.models import AccessoryCheckListItemGlue
 from aws_mqaserver.team_Accessory.models import AccessoryCheckListItemDestructive
 
@@ -41,6 +46,47 @@ def get_check_list_items(request):
         for e in list:
             arr.append(model_to_dict(e))
         return response.ResponseData(arr)
+    except Exception:
+        traceback.print_exc()
+        return response.ResponseError('System Error')
+
+# Export Check List Items
+def export_check_list_items(request):
+    operator = validator.checkout_token_user(request)
+    params = json.loads(request.body.decode())
+    checkListId = validator.validate_not_empty(params, 'checkListId')
+    type = validator.validate_not_empty(params, 'type')
+    try:
+        list = None
+        if type == AccessoryCheckType.Glue:
+            list = AccessoryCheckListItemGlue.objects.all().filter(checkListId=checkListId).order_by("sn")
+        elif type == AccessoryCheckType.Destructive:
+            list = AccessoryCheckListItemDestructive.objects.all().filter(checkListId=checkListId).order_by("sn")
+        if list is None or len(list) == 0:
+            return response.ResponseError('Check List Empty')
+        entry = AccessoryCheckList.objects.get(id=checkListId)
+        excel_name = entry.lob + '_' + entry.site + '_' + entry.productLine + '_' + entry.project + '_' + entry.part + '.xlsx'
+        output = BytesIO()
+        excel_writer = pandas.ExcelWriter(output, engine="xlsxwriter")
+        excel_row = []
+        for e in list:
+            excel_row.append([
+                e.sn,
+                e.site,
+                e.theClass,
+                e.lineShift,
+                e.projects,
+                e.item,
+                e.unit,
+                e.LSL,
+                e.USL,
+            ])
+        pandas.DataFrame(excel_row, columns=[
+            'SN', 'Site', 'Class', 'Line&Shift', 'Projects', 'Item', 'Unit', 'LSL', 'USL'
+        ]).to_excel(excel_writer, sheet_name='Check List', index=False)
+        excel_writer.close()
+        output.seek(0)
+        return response.HttpResponseExcel(output.getvalue(), excel_name)
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')

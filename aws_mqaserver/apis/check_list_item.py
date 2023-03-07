@@ -3,6 +3,10 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.db import models
 
+from io import BytesIO
+import pandas
+from django.core.files import temp as tempfile
+
 from django.core.paginator import Paginator
 import logging
 from django.conf import settings
@@ -19,6 +23,7 @@ from aws_mqaserver.utils import ids
 from aws_mqaserver.utils import audit
 
 from aws_mqaserver.models import CheckType
+from aws_mqaserver.models import CheckList
 from aws_mqaserver.models import CheckListItemModule
 from aws_mqaserver.models import CheckListItemEnclosure
 from aws_mqaserver.models import CheckListItemORT
@@ -47,6 +52,102 @@ def get_check_list_items(request):
         for e in list:
             arr.append(model_to_dict(e))
         return response.ResponseData(arr)
+    except Exception:
+        traceback.print_exc()
+        return response.ResponseError('System Error')
+
+# Export Check List Items
+def export_check_list_items(request):
+    operator = validator.checkout_token_user(request)
+    params = json.loads(request.body.decode())
+    checkListId = validator.validate_not_empty(params, 'checkListId')
+    type = validator.validate_not_empty(params, 'type')
+    try:
+        list = None
+        if type == CheckType.Module:
+            list = CheckListItemModule.objects.all().filter(checkListId=checkListId).order_by("sn")
+        elif type == CheckType.Enclosure:
+            list = CheckListItemEnclosure.objects.all().filter(checkListId=checkListId).order_by("sn")
+        elif type == CheckType.ORT:
+            list = CheckListItemORT.objects.all().filter(checkListId=checkListId).order_by("sn")
+        arr = []
+        if list is None or len(list) == 0:
+            return response.ResponseError('Check List Empty')
+        entry = CheckList.objects.get(id=checkListId)
+        excel_name = entry.lob + '_' + entry.site + '_' + entry.productLine + '_' + entry.project + '_' + entry.part + '_' + type + '.xlsx'
+        output = BytesIO()
+        excel_writer = pandas.ExcelWriter(output, engine="xlsxwriter")
+        excel_row = []
+        if type == CheckType.Module:
+            for e in list:
+                ifCtq = ''
+                if e.ifCtq:
+                    ifCtq = 'Y'
+                else:
+                    ifCtq = 'N'
+
+                excel_row.append([
+                    e.sn,
+                    e.mainProcess,
+                    e.subProcess,
+                    ifCtq,
+                    e.measurementEquipment,
+                    e.LSL,
+                    e.USL,
+                    e.LCL,
+                    e.UCL,
+                    e.checkItem,
+                    e.sampleUnit,
+                    e.sampleSize,
+                    e.frenquencyBasis,
+                    e.controlType,
+                    e.controlMethod,
+                    e.controlCriteria,
+                    e.responsePlan,
+                    e.sopNo,
+                    e.auditSampleSize,
+                ])
+            pandas.DataFrame(excel_row, columns=[
+                'SN', 'Main process', 'Sub process (Station/Process description)', 'IF CTQ', 'Measurement Equipment', 'LSL', 'USL', 'LCL (optional)', 'UCL (optional)',
+                'Characteristic (Check item)', 'Sample Unit', 'Sample Size', 'Frenquency/Basis', 'Control Type', 'Control Method', 'Control Criteria', 'Response plan', 'SOP-NO.', 'Audit Sample Size'
+            ]).to_excel(excel_writer, sheet_name='Check List', index=False)
+        elif type == CheckType.Enclosure:
+            for e in list:
+                excel_row.append([
+                    e.sn,
+                    e.mainProcess,
+                    e.subProcess,
+                    e.checkItems,
+                    e.samplingSize,
+                ])
+            pandas.DataFrame(excel_row, columns=[
+                'SN', 'Main process', 'Sub process (Station/Process description)', 'Check Items', 'Sampling Size'
+            ]).to_excel(excel_writer, sheet_name='Check List', index=False)
+        elif type == CheckType.ORT:
+            for e in list:
+                excel_row.append([
+                    e.sn,
+                    e.project,
+                    e.testItem,
+                    e.testConditionParameter,
+                    e.equipment,
+                    e.fixtureYN,
+                    e.sampleOrientation,
+                    e.recoveryTime,
+                    e.sampleSize,
+                    e.samplingFreq,
+                    e.duration,
+                    e.readPoint,
+                    e.passFailCriteria,
+                    e.OCAP,
+                ])
+            pandas.DataFrame(excel_row, columns=[
+                'SN', 'Project', 'Test Item', 'Test Condition/Parameter', 'Equipment', 'Fixture (Y/N)', 'Sample Orientation',
+                'Recovery Time', 'Sample Size', 'Sampling Freq.', 'Duration', 'Read Point', 'Pass/Fail Criteria', 'OCAP'
+            ]).to_excel(excel_writer, sheet_name='Check List', index=False)
+        excel_writer.close()
+        output.seek(0)
+        return response.HttpResponseExcel(output.getvalue(), excel_name)
     except Exception:
         traceback.print_exc()
         return response.ResponseError('System Error')

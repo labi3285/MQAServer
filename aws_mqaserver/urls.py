@@ -94,6 +94,7 @@ urlpatterns = [
     path('delete_check_list', aws_mqaserver.apis.check_list.delete_check_list),
     path('get_check_list_items_page', aws_mqaserver.apis.check_list_item.get_check_list_items_page),
     path('get_check_list_items', aws_mqaserver.apis.check_list_item.get_check_list_items),
+    path('export_check_list_items', aws_mqaserver.apis.check_list_item.export_check_list_items),
 
     path('upload_audit_item', aws_mqaserver.apis.audit_item.upload_audit_item),
     path('upload_kappa_item', aws_mqaserver.apis.kappa_item.upload_kappa_item),
@@ -134,6 +135,7 @@ urlpatterns = [
     path('mde/delete_check_list', aws_mqaserver.team_MDE.apis.check_list.delete_check_list),
     path('mde/get_check_list_items_page', aws_mqaserver.team_MDE.apis.check_list_item.get_check_list_items_page),
     path('mde/get_check_list_items', aws_mqaserver.team_MDE.apis.check_list_item.get_check_list_items),
+    path('mde/export_check_list_items', aws_mqaserver.team_MDE.apis.check_list_item.export_check_list_items),
 
     path('mde/upload_audit_item', aws_mqaserver.team_MDE.apis.audit_item.upload_audit_item),
 
@@ -150,6 +152,7 @@ urlpatterns = [
     path('accessory/delete_check_list', aws_mqaserver.team_Accessory.apis.check_list.delete_check_list),
     path('accessory/get_check_list_items_page', aws_mqaserver.team_Accessory.apis.check_list_item.get_check_list_items_page),
     path('accessory/get_check_list_items', aws_mqaserver.team_Accessory.apis.check_list_item.get_check_list_items),
+    path('accessory/export_check_list_items', aws_mqaserver.team_Accessory.apis.check_list_item.export_check_list_items),
 
     path('accessory/upload_audit_item', aws_mqaserver.team_Accessory.apis.audit_item.upload_audit_item),
 
@@ -167,6 +170,7 @@ urlpatterns = [
     path('display/delete_check_list', aws_mqaserver.team_Display.apis.check_list.delete_check_list),
     path('display/get_check_list_items_page', aws_mqaserver.team_Display.apis.check_list_item.get_check_list_items_page),
     path('display/get_check_list_items', aws_mqaserver.team_Display.apis.check_list_item.get_check_list_items),
+    path('display/export_check_list_items', aws_mqaserver.team_Display.apis.check_list_item.export_check_list_items),
 
     path('display/upload_audit_item', aws_mqaserver.team_Display.apis.audit_item.upload_audit_item),
     path('display/get_mil_items_page', aws_mqaserver.team_Display.apis.mil_item.get_mil_items_page),
@@ -192,6 +196,7 @@ urlpatterns = [
     path('sip/delete_check_list', aws_mqaserver.team_SIP.apis.check_list.delete_check_list),
     path('sip/get_check_list_items_page', aws_mqaserver.team_SIP.apis.check_list_item.get_check_list_items_page),
     path('sip/get_check_list_items', aws_mqaserver.team_SIP.apis.check_list_item.get_check_list_items),
+    path('sip/export_check_list_items', aws_mqaserver.team_SIP.apis.check_list_item.export_check_list_items),
 
     path('sip/upload_audit_item', aws_mqaserver.team_SIP.apis.audit_item.upload_audit_item),
     path('sip/get_mil_items_page', aws_mqaserver.team_SIP.apis.mil_item.get_mil_items_page),
