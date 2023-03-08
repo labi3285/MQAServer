@@ -63,9 +63,27 @@ def upload_audit_item(request):
             totalCount += 1
             isDone = value.safe_get_in_key(e, 'isDone', False)
             points = value.safe_get_in_key(e, 'points', [])
+
+            _failCount = 0
+            _passCount = 0
             for p in points:
                 p['checkItem'] = e['checkItem']
+                outOfSpec = value.safe_get_in_key(p, 'outOfSpec')
+                if outOfSpec:
+                    _failCount += 1
+                else:
+                    _passCount += 1
                 audit_items_points.append(p)
+            e['failCount'] = _failCount
+            e['passCount'] = _passCount
+            if _failCount > 0:
+                e['status'] = 'NG'
+            else:
+                if isDone:
+                    e['status'] = 'OK'
+                else:
+                    e['status'] = None
+
             if isDone:
                 doneCount += 1
             if type == AccessoryCheckType.Glue or type == AccessoryCheckType.Destructive:
