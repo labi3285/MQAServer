@@ -76,6 +76,7 @@ class AccessoryAuditItem(models.Model):
     auditRemark = models.CharField('auditRemark', null=True, max_length=255)
     updateTime = models.DateTimeField(null=True)
     createTime = models.DateTimeField(null=True)
+    estimatedTime = models.DateTimeField(null=False)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
     passCount = models.IntegerField('passCount', null=False)
@@ -110,6 +111,7 @@ class AccessoryAuditItemCheckItemGlue(models.Model):
     status = models.CharField('status', null=True, max_length=50)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     createTime = models.DateTimeField(null=True)
+    estimatedTime = models.DateTimeField(null=False)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
     class Meta:
@@ -136,6 +138,7 @@ class AccessoryAuditItemCheckItemGluePoint(models.Model):
     outOfSpec = models.BooleanField('outOfSpec', null=False)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     createTime = models.DateTimeField(null=True)
+    estimatedTime = models.DateTimeField(null=False)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
     class Meta:
@@ -166,6 +169,7 @@ class AccessoryAuditItemCheckItemDestructive(models.Model):
     status = models.CharField('status', null=True, max_length=50)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     createTime = models.DateTimeField(null=True)
+    estimatedTime = models.DateTimeField(null=False)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
     class Meta:

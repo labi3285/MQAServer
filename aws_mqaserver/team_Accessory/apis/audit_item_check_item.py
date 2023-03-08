@@ -65,7 +65,7 @@ def _get_audit_item_check_items_page(request, type):
         traceback.print_exc()
         return response.ResponseError('System Error')
 
-def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, type, auditorId, auditor, uploadTime, dicArr):
+def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, type, auditorId, auditor, uploadTime, estimatedTime, dicArr):
     batch = []
     if type == AccessoryCheckType.Glue:
         for e in dicArr:
@@ -110,6 +110,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
                 status=status,
                 createTime=createTime,
                 uploadTime=uploadTime,
+                estimatedTime=estimatedTime,
                 auditorId=auditorId,
                 auditor=auditor,
             )
@@ -160,6 +161,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
                 status=status,
                 createTime=createTime,
                 uploadTime=uploadTime,
+                estimatedTime=estimatedTime,
                 auditorId=auditorId,
                 auditor=auditor,
             )
@@ -167,7 +169,7 @@ def _batch_add_check_items(auditItemId, lob, site, productLine, project, part, t
         if len(batch) > 0:
             AccessoryAuditItemCheckItemDestructive.objects.bulk_create(batch, batch_size=len(batch))
 
-def _batch_add_check_items_points(auditItemId, lob, site, productLine, project, part, type, auditorId, auditor, uploadTime, dicArr):
+def _batch_add_check_items_points(auditItemId, lob, site, productLine, project, part, type, auditorId, auditor, uploadTime, estimatedTime, dicArr):
     batch = []
     if type == AccessoryCheckType.Glue:
         for e in dicArr:
@@ -206,6 +208,7 @@ def _batch_add_check_items_points(auditItemId, lob, site, productLine, project, 
                 outOfSpec=outOfSpec,
                 createTime=createTime,
                 uploadTime=uploadTime,
+                estimatedTime=estimatedTime,
                 auditorId=auditorId,
                 auditor=auditor,
             )
@@ -250,6 +253,7 @@ def _batch_add_check_items_points(auditItemId, lob, site, productLine, project, 
                 outOfSpec=outOfSpec,
                 createTime=createTime,
                 uploadTime=uploadTime,
+                estimatedTime=estimatedTime,
                 auditorId=auditorId,
                 auditor=auditor,
             )

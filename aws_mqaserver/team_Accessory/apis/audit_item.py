@@ -93,6 +93,11 @@ def upload_audit_item(request):
                     if isDone:
                         passCount += 1
 
+
+    estimatedTime = uploadTime
+    if crossDays != None and crossDays == 1:
+        estimatedTime = estimatedTime - datetime.timedelta(days=1)
+
     # audit_type_name = ''
     # if type == AccessoryCheckType.Glue:
     #     audit_type_name = 'Glue'
@@ -184,13 +189,13 @@ def upload_audit_item(request):
     # os.remove(excel_temp_path)
 
     entry = AccessoryAuditItem(lob=lob, site=site, productLine=productLine, project=project, part=part, type=type,
-                        beginTime=beginTime, endTime=endTime, crossDays=crossDays, auditRemark=auditRemark, uploadTime=uploadTime, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, rawJson=rawJson, createTime=datetime.datetime.now(),
+                        beginTime=beginTime, endTime=endTime, crossDays=crossDays, auditRemark=auditRemark, uploadTime=uploadTime, estimatedTime=estimatedTime, passCount=passCount, failCount=failCount, doneCount=doneCount, totalCount=totalCount, rawJson=rawJson, createTime=datetime.datetime.now(),
                           auditorId=operator.id, auditor=auditor)
     entry.save()
     if audit_items != None and len(audit_items) > 0:
-        audit_item_check_item._batch_add_check_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, audit_items)
+        audit_item_check_item._batch_add_check_items(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, estimatedTime, audit_items)
     if audit_items_points != None and len(audit_items_points) > 0:
-        audit_item_check_item._batch_add_check_items_points(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, audit_items_points)
+        audit_item_check_item._batch_add_check_items_points(entry.id, lob, site, productLine, project, part, type, operator.id, auditor, uploadTime, estimatedTime, audit_items_points)
     return response.ResponseData({
         'id': entry.id
     })
