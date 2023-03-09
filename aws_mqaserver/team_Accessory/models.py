@@ -196,6 +196,7 @@ class AccessoryAuditItemCheckItemDestructivePoint(models.Model):
     outOfSpec = models.BooleanField('outOfSpec', null=False)
     uploadTime = models.DateTimeField('uploadTime', null=False)
     createTime = models.DateTimeField(null=True)
+    estimatedTime = models.DateTimeField(null=False)
     auditorId = models.BigIntegerField('auditorId', null=False)
     auditor = models.CharField('auditor', null=False, max_length=50)
     class Meta:
